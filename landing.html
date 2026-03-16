@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APIdex — API Universe Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080b0f;
+            --bg-2: #0d1117;
+            --bg-3: #161b22;
+            --border: rgba(255, 255, 255, 0.07);
+            --border-2: rgba(255, 255, 255, 0.12);
+            --text: #f0f6fc;
+            --text-muted: #8b949e;
+            --text-dim: #484f58;
+            --accent: #00c896;
+            --accent-dim: rgba(0, 200, 150, 0.12);
+            --accent-glow: rgba(0, 200, 150, 0.25);
+            --violet: #7c3aed;
+            --violet-dim: rgba(124, 58, 237, 0.15);
+            --peach: #f5e6d8;
+            --peach-2: #ede0d4;
+            --font-syne: 'Syne', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* Grain Texture */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Layout Helpers */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(8, 11, 15, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            transition: background 0.3s;
+        }
+
+        nav.scrolled {
+            background: rgba(8, 11, 15, 0.95);
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text);
+            font-family: var(--font-syne);
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .logo-icon {
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 2px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+            padding: 2px;
+        }
+
+        .logo-dot {
+            width: 3px;
+            height: 3px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 400;
+            transition: color 0.15s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .btn-text {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.15s;
+        }
+
+        .btn-text:hover {
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 20px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 160px 24px 80px;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse 800px 600px at 75% 20%, rgba(0, 200, 150, 0.12) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse 400px 300px at 15% 10%, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
+            z-index: -1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border-2);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 14px;
+            border-radius: 100px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .badge-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-text .accent { color: var(--accent); }
+        .badge-text .muted { color: var(--text-muted); }
+        .badge-text .dim { color: var(--text-dim); padding: 0 4px; }
+
+        .hero h1 {
+            font-family: var(--font-syne);
+            font-weight: 800;
+            font-size: clamp(3rem, 7vw, 5.5rem);
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            color: var(--text);
+            margin-bottom: 24px;
+            max-width: 900px;
+            animation: fadeUp 0.5s ease both 0.1s;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 480px;
+            line-height: 1.65;
+            margin-bottom: 36px;
+            animation: fadeUp 0.5s ease both 0.2s;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 12px;
+            animation: fadeUp 0.5s ease both 0.3s;
+        }
+
+        .btn-white {
+            background: #fff;
+            color: #080b0f;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-white:hover {
+            background: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .btn-white:active {
+            transform: scale(0.97);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 15px;
+            font-weight: 500;
+            padding: 12px 24px;
+            border-color: var(--border-2);
+            border-width: 1px;
+            border-style: solid;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-outline:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+            color: var(--text);
+        }
+
+        .btn-outline .icon {
+            font-size: 10px;
+        }
+
+        /* Mockup Card (Hero) */
+        .mockup-wrapper {
+            margin-top: 64px;
+            background: var(--peach);
+            border: 1px solid var(--peach-2);
+            border-radius: 20px;
+            padding: 32px 32px 0;
+            max-width: 780px;
+            width: 100%;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+            animation: fadeUp 0.6s ease both 0.4s;
+            overflow: hidden;
+        }
+
+        .mockup-inner {
+            background: #0d1117;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 400px;
+        }
+
+        .mockup-top {
+            height: 36px;
+            background: #161b22;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 6px;
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-red { background: #ff5f57; }
+        .dot-yellow { background: #febc2e; }
+        .dot-green { background: #28c840; }
+
+        .mockup-search {
+            margin-left: auto;
+            width: 120px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .mockup-content {
+            display: flex;
+            flex: 1;
+        }
+
+        .mockup-sidebar {
+            width: 180px;
+            background: #0d1117;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 12px 0;
+        }
+
+        .sidebar-item {
+            height: 32px;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .sidebar-item-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+        }
+
+        .sidebar-item.active {
+            color: var(--text);
+        }
+
+        .sidebar-item.active .sidebar-item-dot {
+            background: var(--accent);
+        }
+
+        .mockup-main {
+            flex: 1;
+            padding: 24px;
+            text-align: left;
+        }
+
+        .mockup-label {
+            font-size: 12px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .progress-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--accent);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background: var(--bg);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--border-2);
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .card-icon.accent { background: rgba(0, 200, 150, 0.1); color: var(--accent); }
+        .card-icon.violet { background: var(--violet-dim); color: var(--violet); }
+        .card-icon.muted { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); }
+
+        .card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Performance Section */
+        .performance {
+            padding: 80px 0 0;
+            text-align: center;
+        }
+
+        .performance h2 {
+            font-family: var(--font-syne);
+            font-weight: 700;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            margin-bottom: 12px;
+        }
+
+        .performance p {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 400px;
+            margin: 0 auto 48px;
+        }
+
+        .perf-mockup {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 0 80px rgba(0, 200, 150, 0.06);
+        }
+
+        .perf-top {
+            background: var(--bg-3);
+            height: 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 6px;
+        }
+
+        .perf-tabs {
+            margin: 0 auto;
+            display: flex;
+            gap: 16px;
+        }
+
+        .perf-tab {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .perf-body {
+            padding: 20px;
+            text-align: left;
+        }
+
+        .perf-search {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-2);
+            border-radius: 8px;
+            height: 40px;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .perf-search span {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .kbd-badge {
+            margin-left: auto;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .perf-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .row-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-syne);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .row-icon.teal { background: var(--accent); color: #000; }
+        .row-icon.violet { background: var(--violet); color: #fff; }
+
+        .row-name { font-size: 13px; font-weight: 500; }
+
+        .tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-weight: 600;
+        }
+
+        .tag-teal { background: var(--accent-dim); color: var(--accent); }
+        .tag-violet { background: var(--violet-dim); color: var(--violet); }
+
+        .perf-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        /* Developers Section */
+        .devs {
+            padding: 120px 0;
+        }
+
+        .devs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .devs-content h2 {
+            font-family: var(--font-syne);
+            font-weight: 700;
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .devs-content p {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .bullet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bullet {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .bullet-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .terminal {
+            background: #0d1117;
+            border: 1px solid var(--border-2);
+            border-radius: 14px;
+            overflow: hidden;
+            font-family: var(--font-mono);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .term-top {
+            background: #161b22;
+            height: 38px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 6px;
+        }
+
+        .term-label {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .term-body {
+            padding: 20px;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .line-cmd { color: var(--text-muted); }
+        .line-dim { color: var(--text-dim); }
+        .line-accent { color: var(--accent); }
+        .line-text { color: var(--text); }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: var(--accent);
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+        }
+
+        /* Join CTA Section */
+        .join {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .join h2 {
+            font-family: var(--font-syne);
+            font-weight: 800;
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        .join p {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+        }
+
+        .join-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-2);
+            border-top: 1px solid var(--border);
+            padding: 60px 0 40px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 48px;
+        }
+
+        .footer-brand p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 200px;
+            margin-top: 10px;
+        }
+
+        .footer-col h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .footer-col a {
+            display: block;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 10px;
+            transition: color 0.15s;
+        }
+
+        .footer-col a:hover {
+            color: var(--text);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .devs-grid { gap: 40px; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+            .nav-links { display: none; }
+            .hamburger { display: flex; }
+            .nav-actions { gap: 12px; }
+            .hero { padding-top: 120px; }
+            .hero h1 { font-size: clamp(2.2rem, 8vw, 3.5rem); }
+            .hero-btns { flex-direction: column; width: 100%; }
+            .hero-btns button { width: 100%; justify-content: center; }
+            .mockup-wrapper { padding: 16px 16px 0; border-radius: 14px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .perf-footer { display: none; }
+            .devs-grid { grid-template-columns: 1fr; }
+            .join-btns { flex-direction: column; }
+            .join-btns button { width: 100%; }
+            .footer-grid { grid-template-columns: 2fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container nav-content">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <div class="logo-dot"></div><div class="logo-dot"></div>
+                    <div class="logo-dot"></div><div class="logo-dot"></div>
+                </div>
+                <span>APIdex</span>
+            </a>
+            <div class="nav-links">
+                <a href="#explore">Explore</a>
+                <a href="#documentation">Documentation</a>
+                <a href="#pricing">Pricing</a>
+            </div>
+            <div class="nav-actions">
+                <a href="#" class="btn-text">Log In</a>
+                <a href="#" class="btn-primary">Start Exploring</a>
+                <div class="hamburger">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="badge">
+            <div class="badge-dot"></div>
+            <div class="badge-text">
+                <span class="accent">V1.0 New Live</span>
+                <span class="dim">—</span>
+                <span class="muted">High Performance API Discovery</span>
+            </div>
+        </div>
+        <h1>The API Universe,<br>Explored<span>.</span></h1>
+        <p>Navigate the world's most comprehensive index of APIs. Performance metrics, sandbox testing, and side-by-side comparisons at your fingertips.</p>
+        <div class="hero-btns">
+            <button class="btn-white">Start Exploring</button>
+            <button class="btn-outline">
+                <span class="icon">▶</span>
+                Watch Demo
+            </button>
+        </div>
+
+        <div class="mockup-wrapper">
+            <div class="mockup-inner">
+                <div class="mockup-top">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                    <div class="mockup-search"></div>
+                </div>
+                <div class="mockup-content">
+                    <div class="mockup-sidebar">
+                        <div class="sidebar-item active">
+                            <div class="sidebar-item-dot"></div>
+                            Content
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-item-dot"></div>
+                            Conversations
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-item-dot"></div>
+                            Product Design
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-item-dot"></div>
+                            Athletes
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-item-dot"></div>
+                            Animals
+                        </div>
+                    </div>
+                    <div class="mockup-main">
+                        <div class="mockup-label">Whoa generated datasets</div>
+                        <div class="progress-bars">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                            <div class="progress-bar" style="width: 70%;"></div>
+                            <div class="progress-bar" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="features container">
+        <div class="features-grid">
+            <div class="card reveal" style="transition-delay: 0.1s;">
+                <div class="card-icon accent">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <h3>Instant Discovery</h3>
+                <p>Global search across 50,000+ public and private APIs with sub-millisecond latency.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.2s;">
+                <div class="card-icon violet">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                </div>
+                <h3>Smart Filtering</h3>
+                <p>Filter by protocol, latency, pricing model, or industry standards like SOC2 compliance.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.3s;">
+                <div class="card-icon muted">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18"></rect><rect x="14" y="3" width="7" height="18"></rect></svg>
+                </div>
+                <h3>Side-by-Side</h3>
+                <p>Compare endpoints, response times, and payload structures in a unified split view.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="performance container reveal">
+        <h2>Designed for Performance</h2>
+        <p>A command-center for your API workflow. Every interaction is designed to keep you in the flow.</p>
+
+        <div class="perf-mockup">
+            <div class="perf-top">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+                <div class="perf-tabs">
+                    <div class="perf-tab">Explorer</div>
+                    <div class="perf-tab">Compare</div>
+                </div>
+            </div>
+            <div class="perf-body">
+                <div class="perf-search">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <span>Search APIs, tools, docs...</span>
+                    <div class="kbd-badge">⌘K</div>
+                </div>
+                <div class="perf-row">
+                    <div class="row-icon teal">N</div>
+                    <div class="row-name">NextAbove.ai</div>
+                    <div class="tag tag-teal">API Documentation</div>
+                </div>
+                <div class="perf-row">
+                    <div class="row-icon violet">C</div>
+                    <div class="row-name">CryptoLink</div>
+                    <div class="tag tag-violet">Payment Gateway</div>
+                </div>
+            </div>
+            <div class="perf-footer">
+                <span>50,000+ APIs indexed</span>
+                <span>Sub 10ms latency</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="devs container reveal">
+        <div class="devs-grid">
+            <div class="devs-content">
+                <h2>Built by developers,<br>for developers.</h2>
+                <p>Forget slow web interfaces. APIdex is built for speed. Use the command-line interface fast to navigate resources without ever touching your mouse.</p>
+                <div class="bullet-list">
+                    <div class="bullet"><div class="bullet-dot"></div>Keyboard shortcuts for every action</div>
+                    <div class="bullet"><div class="bullet-dot"></div>One-click SDK generation in 12 languages</div>
+                    <div class="bullet"><div class="bullet-dot"></div>Global latency testing via APIdex nodes</div>
+                </div>
+            </div>
+            <div class="terminal">
+                <div class="term-top">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                    <div class="term-label">bash</div>
+                </div>
+                <div class="term-body">
+                    <div class="line-cmd">$ apidex search "payments"</div>
+                    <div class="line-dim">Searching global registry...</div>
+                    <div class="line-dim">&nbsp;</div>
+                    <div class="line-accent">Found 10 results</div>
+                    <div class="line-dim">&nbsp;</div>
+                    <div class="line-text">stripe &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v2024.09 ●</div>
+                    <div class="line-dim">&nbsp;&nbsp;No one option &nbsp;&nbsp;&nbsp;No one option</div>
+                    <div class="line-text">razorpay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v2024.08 ●</div>
+                    <div class="line-dim">&nbsp;&nbsp;No one option &nbsp;&nbsp;&nbsp;No.latency</div>
+                    <div class="line-text"><span class="cursor"></span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="join container reveal">
+        <h2>Join the next generation<br>of developers.</h2>
+        <p>Stop searching. Start building. Get started with APIdex for free today.</p>
+        <div class="join-btns">
+            <button class="btn-primary" style="padding: 13px 26px; font-size: 15px; font-weight: 600;">Create Free Account</button>
+            <button class="btn-outline" style="padding: 13px 26px; font-size: 15px; font-weight: 500;">Contact Sales</button>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="#" class="logo">
+                    <div class="logo-icon">
+                        <div class="logo-dot"></div><div class="logo-dot"></div>
+                        <div class="logo-dot"></div><div class="logo-dot"></div>
+                    </div>
+                    <span>APIdex</span>
+                </a>
+                <p>Building the bridge for a more connected web.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="#">Explorer</a>
+                <a href="#">Integrations</a>
+                <a href="#">Pricing</a>
+                <a href="#">Status</a>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <a href="#">About</a>
+                <a href="#">Blog</a>
+                <a href="#">Careers</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Cookies</a>
+                <a href="#">Security</a>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <span>© 2025 APIdex Universe Explorer. All rights reserved.</span>
+        </div>
+    </footer>
+
+    <script>
+        // Intersection Observer for Scroll Animations
+        const observerOptions = {
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Nav Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 10) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // CTA Micro-interactions
+        const buttons = document.querySelectorAll('button, .btn-primary, .btn-white');
+        buttons.forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.97)';
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = 'scale(1.02)';
+            });
+        });
+    </script>
+</body>
+</html>

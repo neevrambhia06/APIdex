@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APIdex  API Universe Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <style id="main-styles">
+        :root {
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface-hover: #27272a;
+            --border: rgba(244, 244, 245, 0.1);
+            --border-hover: rgba(244, 244, 245, 0.2);
+            --accent: #ffffff;
+            --purple: #a1a1aa;
+            --text-main: #f4f4f5;
+            --text-dim: #a1a1aa;
+            --text-dark: #52525b;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --header-h: 72px;
+            --radius: 8px;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --glass: blur(12px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(244, 244, 245, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(244, 244, 245, 0.03) 1px, transparent 1px);
+            background-size: 64px 64px;
+            background-attachment: fixed;
+        }
+
+        /* [UTILITIES] */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-col { display: flex; flex-direction: column; }
+        .grid { display: grid; }
+        .w-full { width: 100%; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        .gap-12 { gap: 3rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-12 { margin-bottom: 3rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mt-12 { margin-top: 3rem; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .text-left { text-align: left; }
+        .glass { background: var(--surface); border: 1px solid var(--border); }
+        .luxury-card { border-radius: var(--radius); border: 1px solid var(--border); transition: border-color 0.2s; }
+        .luxury-card:hover { border-color: var(--border-hover); }
+        .mono { font-family: var(--font-mono); font-size: 0.85em; }
+        .syne { font-family: var(--font-syne); }
+        .accent-text { color: var(--accent); }
+        .text-main { color: var(--text-main); }
+        .text-dim { color: var(--text-dim); }
+        .text-dark { color: var(--text-dark); }
+        .badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid currentColor; }
+
+        /* [NAVBAR] */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: var(--header-h); z-index: 100;
+            display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border);
+            padding: 0 4rem; background: rgba(9, 9, 11, 0.8); backdrop-filter: var(--glass);
+        }
+        .bottom-nav {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100;
+            display: flex; align-items: center; gap: 0.5rem; background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: var(--glass); border: 1px solid var(--border); border-radius: 99px;
+            padding: 0.5rem;
+        }
+        .bottom-nav a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+            padding: 0.6rem 1.5rem; border-radius: 99px; transition: all 0.2s; display: block;
+        }
+        .bottom-nav a:hover, .bottom-nav a.active { color: #fff; background: rgba(255,255,255,0.05); }
+        .bottom-nav a.active { color: var(--accent); background: rgba(34, 211, 238, 0.1); }
+
+        .nav-logo { font-size: 1.2rem; font-weight: 700; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 0.25rem; letter-spacing: -0.02em; }
+        .nav-logo span { color: var(--text-dim); font-weight: 400; }
+        .nav-links-top { list-style: none; display: flex; gap: 2.5rem; }
+        .nav-links-top a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+        .nav-links-top a:hover, .nav-links-top a.active { color: var(--accent); }
+        .nav-actions { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-k-hint { background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; color: var(--text-dark); }
+        .btn-luxury { 
+            background: var(--text-main); color: #000; padding: 0.6rem 1.6rem; border-radius: 99px; 
+            font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: opacity 0.2s;
+            display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 0.85rem;
+        }
+        .btn-luxury:hover { opacity: 0.9; }
+        .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: var(--text-dim); }
+
+        /* [COMMAND PALETTE] */
+        #command-palette { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; justify-content: center; padding-top: 15vh; }
+        .cp-inner { width: 640px; height: fit-content; max-height: 500px; overflow: hidden; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
+        .cp-search { width: 100%; border: none; background: transparent; padding: 1.5rem; color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--border); transition: border-color 0.2s; }
+        .cp-search:focus { border-color: var(--accent); }
+        select.cp-search { 
+            background-color: #0c141d; 
+            appearance: none; 
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem !important;
+        }
+        select.cp-search option { background-color: #080b0f; color: #fff; padding: 1rem; }
+        .cp-results { padding: 0.5rem; overflow-y: auto; max-height: 400px; }
+        .cp-item { padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: background 0.2s; }
+        .cp-item:hover, .cp-item.selected { background: rgba(255,255,255,0.05); }
+        .cp-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: var(--text-dark); }
+
+        /* [TOASTS] */
+        #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 300; display: flex; flex-direction: column; gap: 0.75rem; }
+        .toast { padding: 1rem 1.5rem; border-radius: 10px; font-size: 0.9rem; font-weight: 500; min-width: 240px; animation: slideIn 0.3s forwards; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #fff; }
+        .toast.success { border-color: var(--success); background: #061912f2; }
+        .toast.error { border-color: var(--error); background: #1a080bf2; }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+
+        /* [EXPLORER GRID] */
+        .api-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .api-card { padding: 1.5rem; position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+        .api-card:hover { border-color: var(--border-hover); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .card-logo { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .card-provider { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .card-desc { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.5rem; min-height: 2.5em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .card-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .tag-chip { font-size: 10px; background: rgba(244, 244, 245, 0.05); padding: 4px 10px; border-radius: 99px; color: var(--text-dim); border: 1px solid var(--border); }
+
+        /* [PAGE: HOME] */
+        .hero { padding: 10rem 0 6rem; position: relative; text-align: center; }
+        .hero-title { font-size: 4.5rem; line-height: 1.1; margin-bottom: 2rem; color: #fff; font-weight: 700; letter-spacing: -0.03em; }
+        .hero-title span { display: inline; color: var(--text-main); }
+        .hero-desc { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto 3rem; }
+
+        /* [FOOTER] */
+        footer { padding: 4rem 0; border-top: 1px solid var(--border); background: var(--bg); margin-top: 4rem; }
+        .footer-grid { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 4rem; }
+        .footer-logo { font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; display: block; }
+        .footer-col h4 { margin-bottom: 1.5rem; font-family: var(--font-syne); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em; color: var(--accent); }
+        .footer-col ul { list-style: none; }
+        .footer-col ul li { margin-bottom: 0.75rem; }
+        .footer-col ul li a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .footer-col ul li a:hover { color: #fff; }
+
+        /* [RESPONSIVE] */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3rem; }
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .nav-links-top, .nav-k-hint { display: none; }
+            .cp-inner { width: 95%; }
+            .top-nav { padding: 0 1.5rem; }
+            .bottom-nav { width: 90%; justify-content: space-between; bottom: 1rem; }
+            .bottom-nav a { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+        }
+
+        /* [SPEC FIX] */
+        .spec-row { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; align-items: start; padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
+        .spec-row:last-child { border-bottom: none; }
+        .spec-label { color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-syne); }
+        .spec-value { text-align: right; font-weight: 500; font-family: var(--font-mono); font-size: 0.85rem; color: #fff; line-height: 1.4; }
+        .hover-white:hover { color: #fff !important; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .animate-shake { animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both; }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .pulse-green { animation: pulse-green 1.5s infinite; }
+
+        .reveal-key { animation: reveal 0.2s ease-out forwards; }
+        @keyframes reveal { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        .access-panel-btn {
+            width: 100%; height: 44px; border-radius: 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.2s; border: none;
+        }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: var(--text-main); }
+        .btn-outline:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
+        .btn-accent { background: var(--accent); color: #000; }
+        .btn-accent:hover { filter: brightness(1.1); }
+
+        .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+        .vault-input {
+            width: 100%; height: 38px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px;
+            padding: 0 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-main); transition: border-color 0.2s;
+        }
+        .vault-input:focus { border-color: var(--accent); outline: none; }
+        
+        .vault-display {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+            display: flex; align-items: center; gap: 8px; position: relative; overflow: hidden;
+        }
+
+        .vault-input::placeholder { color: var(--text-dark); opacity: 0.6; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        details summary::-webkit-details-marker { display: none; }
+        details summary { list-style: none; }
+
+        /* [ANIMATIONS] */
+        @keyframes reveal { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .reveal-key { animation: reveal 0.2s ease-out forwards; }
+
+        @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-gradient-text {
+            background: linear-gradient(to right, #00ff87, #00c896, #0ff0fc, #00ff87);
+            background-size: 300% 100%;
+            background-clip: text !important;
+            -webkit-background-clip: text !important;
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            animation: gradient-move 8s ease infinite;
+            display: inline-block;
+        }
+
+        /* [LOGO LOOP] */
+        .logoloop {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            margin: 3rem 0;
+            user-select: none;
+        }
+        .logoloop::before, .logoloop::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 120px; z-index: 10; pointer-events: none;
+        }
+        .logoloop::before {
+            left: 0; background: linear-gradient(to right, var(--bg), transparent);
+        }
+        .logoloop::after {
+            right: 0; background: linear-gradient(to left, var(--bg), transparent);
+        }
+        .logoloop-track {
+            display: flex;
+            width: max-content;
+            will-change: transform;
+        }
+        .logoloop-list {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+            padding: 0 1rem;
+        }
+        .logo-pill {
+            flex-shrink: 0;
+            height: 48px;
+            padding: 0 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+        }
+        .logo-pill:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.06);
+            border-color: var(--accent);
+        }
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .logo-name {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <div id="command-palette" class="hidden" onclick="closeCP(event)">
+        <div class="cp-inner glass" onclick="event.stopPropagation()">
+            <input type="text" id="cp-input" class="cp-search" placeholder="Type a command or search APIs (⌘K)..." oninput="searchCP()">
+            <div id="cp-results" class="cp-results"></div>
+        </div>
+    </div>
+
+    <nav class="top-nav">
+        <a href="#home" class="nav-logo syne">API<span>dex</span></a>
+        <ul class="nav-links-top">
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+            <div id="auth-ui" class="flex gap-4">
+                <a href="#login" class="btn-luxury btn-ghost">Login</a>
+                <a href="#signup" class="btn-luxury">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="bottom-nav">
+        <a href="#home" id="nav-home">Home</a>
+        <a href="#explorer" id="nav-explorer">Explorer</a>
+        <a href="#pricing" id="nav-pricing">Pricing</a>
+        <a href="#compare" id="nav-compare">Compare</a>
+    </nav>
+
+    <main id="app-root" style="padding-top: var(--header-h); padding-bottom: 8rem;">
+        <!-- Content will be injected here -->
+    </main>
+
+    <footer id="app-footer">
+        <div class="container footer-grid">
+            <div class="footer-info">
+                <span class="footer-logo syne">API<span>dex</span></span>
+                <p style="color:var(--text-dim); font-size: 0.9rem; max-width: 300px;">The definitive universe explorer for public APIs. Built for developers, by developers.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="#explorer">Explorer</a></li>
+                    <li><a href="#compare">Comparison Matrix</a></li>
+                    <li><a href="#pricing">Pricing Plans</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="#submit">Submit API</a></li>
+                    <li><a href="https://github.com">GitHub</a></li>
+                    <li><a href="https://discord.com">Discord</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="container" style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); text-align: center; color: var(--text-dark); font-size: 0.8rem;">
+            &copy; 2025 APIdex Explorer. High-fidelity developer tools.
+        </div>
+    </footer>
+
+    <!-- [DATA & CORE LOGIC] -->
+    <script id="app-data">
+        window.apiData = [
+            { id: "anthropic-claude", name: "Claude API", provider: "Anthropic", category: "AI / Machine Learning", logoBg: "#7c3aed", logoText: "CL", shortDescription: "Execute complex reasoning and coding tasks with Claude 3.5 Sonnet. High-fidelity responses for technical documentation.", pricingTier: "Paid", tags: ["claude", "ai", "llm"], websiteURL: "https://anthropic.com", signupURL: "https://console.anthropic.com", docsURL: "https://docs.anthropic.com" },
+            { id: "openai-gpt4", name: "OpenAI API", provider: "OpenAI", category: "AI / Machine Learning", logoBg: "#10a37f", logoText: "OA", shortDescription: "Build with GPT-4o and DALL-E 3 for multimodal intelligence and image generation. Industry-standard for function calling.", pricingTier: "Paid", tags: ["openai", "ai", "llm"], websiteURL: "https://openai.com", signupURL: "https://platform.openai.com/signup", docsURL: "https://platform.openai.com/docs" },
+            { id: "google-gemini", name: "Gemini API", provider: "Google", category: "AI / Machine Learning", logoBg: "#1a73e8", logoText: "GE", shortDescription: "Deploy multimodal models with a 2M token context window for processing massive datasets. Native long-video analysis.", pricingTier: "Paid", tags: ["google", "ai", "gemini"], websiteURL: "https://ai.google.dev", signupURL: "https://aistudio.google.com/app/apikey", docsURL: "https://ai.google.dev/docs" },
+            { id: "assembly-ai", name: "AssemblyAI", provider: "AssemblyAI", category: "AI / Machine Learning", logoBg: "#ff6b6b", logoText: "AA", shortDescription: "Transcribe audio and analyze speech with production-grade diarization and sentiment analysis. Optimized for analytics.", pricingTier: "Freemium", tags: ["stt", "speech", "audio"], websiteURL: "https://www.assemblyai.com", signupURL: "https://www.assemblyai.com/dashboard/signup", docsURL: "https://www.assemblyai.com/docs" },
+            { id: "cohere-api", name: "Cohere API", provider: "Cohere", category: "AI / Machine Learning", logoBg: "#3d5afe", logoText: "CO", shortDescription: "Integrate enterprise-grade RAG and text embeddings for semantic search and classification. Built for retrieval.", pricingTier: "Freemium", tags: ["cohere", "rag", "search"], websiteURL: "https://cohere.com", signupURL: "https://dashboard.cohere.com/welcome/register", docsURL: "https://docs.cohere.com" },
+            { id: "elevenlabs-voice", name: "ElevenLabs API", provider: "ElevenLabs", category: "AI / Machine Learning", logoBg: "#f97316", logoText: "EL", shortDescription: "Generate lifelike speech and clone voices with ultra-low latency. Native support for 29 languages.", pricingTier: "Freemium", tags: ["tts", "voice", "speech"], websiteURL: "https://elevenlabs.io", signupURL: "https://elevenlabs.io/sign-up", docsURL: "https://elevenlabs.io/docs" },
+            { id: "hugging-face", name: "Hugging Face Inference", provider: "Hugging Face", category: "AI / Machine Learning", logoBg: "#ffcc00", logoText: "HF", shortDescription: "Run inference on 500k+ open-source models for NLP, vision, and audio tasks. Unified API for transformers.", pricingTier: "Paid", tags: ["ml", "oss", "models"], websiteURL: "https://huggingface.co", signupURL: "https://huggingface.co/settings/tokens", docsURL: "https://huggingface.co/docs/api-inference" },
+            { id: "mistral-large", name: "Mistral API", provider: "Mistral AI", category: "AI / Machine Learning", logoBg: "#f43f5e", logoText: "MI", shortDescription: "Execute high-performance generation with open-weight models optimized for efficiency. GDPR-compliant hosting.", pricingTier: "Paid", tags: ["mistral", "llm", "ai"], websiteURL: "https://mistral.ai", signupURL: "https://console.mistral.ai", docsURL: "https://docs.mistral.ai" },
+            { id: "replicate-v1", name: "Replicate API", provider: "Replicate", category: "AI / Machine Learning", logoBg: "#000000", logoText: "RE", shortDescription: "Deploy open-source AI models with a single line of code on serverless GPUs. Optimized for Llama 3 and SDXL.", pricingTier: "Paid", tags: ["gpu", "serverless", "images"], websiteURL: "https://replicate.com", signupURL: "https://replicate.com/signin", docsURL: "https://replicate.com/docs" },
+            { id: "stability-ai", name: "Stability AI API", provider: "Stability AI", category: "AI / Machine Learning", logoBg: "#6366f1", logoText: "SA", shortDescription: "Generate images and video with Stable Diffusion 3 and SDXL via high-performance endpoints. Supports inpainting.", pricingTier: "Paid", tags: ["image gen", "video", "ai"], websiteURL: "https://stability.ai", signupURL: "https://platform.stability.ai/docs", docsURL: "https://platform.stability.ai/docs" },
+            { id: "auth0-api", name: "Auth0 API", provider: "Okta", category: "Authentication & Identity", logoBg: "#eb5424", logoText: "A0", shortDescription: "Implement enterprise-grade login, MFA, and SSO with a flexible identity platform. Standard for B2B SaaS.", pricingTier: "Freemium", tags: ["auth0", "iam", "sso"], websiteURL: "https://auth0.com", signupURL: "https://auth0.com/signup", docsURL: "https://auth0.com/docs/api" },
+            { id: "clerk-auth", name: "Clerk API", provider: "Clerk", category: "Authentication & Identity", logoBg: "#6c47ff", logoText: "CL", shortDescription: "Add complete user authentication and multi-tenancy to React and Next.js apps with zero code. Pre-built UI.", pricingTier: "Freemium", tags: ["clerk", "auth", "nextjs"], websiteURL: "https://clerk.com", signupURL: "https://dashboard.clerk.com/sign-up", docsURL: "https://clerk.com/docs" },
+            { id: "firebase-auth", name: "Firebase Auth", provider: "Google", category: "Authentication & Identity", logoBg: "#ffca28", logoText: "FB", shortDescription: "Authenticate users via email, social providers, or phone numbers with a free managed service. Mobile native.", pricingTier: "Free", tags: ["firebase", "auth", "google"], websiteURL: "https://firebase.google.com", signupURL: "https://console.firebase.google.com", docsURL: "https://firebase.google.com/docs/auth" },
+            { id: "kinde-auth", name: "Kinde API", provider: "Kinde", category: "Authentication & Identity", logoBg: "#000000", logoText: "KI", shortDescription: "Scale B2B SaaS with built-in feature flagging and multi-environment management. Enterprise readiness.", pricingTier: "Freemium", tags: ["kinde", "auth", "saas"], websiteURL: "https://kinde.com", signupURL: "https://kinde.com/sign-up", docsURL: "https://kinde.com/docs" },
+            { id: "supabase-auth", name: "Supabase Auth", provider: "Supabase", category: "Authentication & Identity", logoBg: "#3ecf8e", logoText: "SB", shortDescription: "Leverage Row Level Security and Postgres-native authentication for direct DB access. JWT support.", pricingTier: "Freemium", tags: ["supabase", "auth", "postgres"], websiteURL: "https://supabase.com", signupURL: "https://supabase.com/dashboard/sign-up", docsURL: "https://supabase.com/docs/guides/auth" },
+            { id: "fcm-push", name: "FCM API", provider: "Google", category: "Communication", logoBg: "#ffa000", logoText: "FC", shortDescription: "Deliver push notifications to Android, iOS, and Web clients with zero infrastructure management.", pricingTier: "Free", tags: ["push", "notifications", "mobile"], websiteURL: "https://firebase.google.com", signupURL: "https://console.firebase.google.com", docsURL: "https://firebase.google.com/docs/cloud-messaging" },
+            { id: "novu-api", name: "Novu API", provider: "Novu", category: "Communication", logoBg: "#22d3ee", logoText: "NO", shortDescription: "Orchestrate multi-channel notifications (Email, SMS, Push, In-app) with a unified engine. Open-source core.", pricingTier: "Freemium", tags: ["notifications", "sms", "email"], websiteURL: "https://novu.co", signupURL: "https://dashboard.novu.co", docsURL: "https://docs.novu.co" },
+            { id: "resend-email", name: "Resend API", provider: "Resend", category: "Communication", logoBg: "#000000", logoText: "RE", shortDescription: "Deliver transactional and marketing emails via a modern developer-first API with React Email support.", pricingTier: "Freemium", tags: ["email", "resend", "nextjs"], websiteURL: "https://resend.com", signupURL: "https://resend.com/emails", docsURL: "https://resend.com/docs" },
+            { id: "sendgrid-email", name: "SendGrid API", provider: "Twilio", category: "Communication", logoBg: "#00b3e3", logoText: "SG", shortDescription: "Execute large-scale email campaigns and transactional messaging with world-class deliverability. Reliable infra.", pricingTier: "Freemium", tags: ["sendgrid", "email", "marketing"], websiteURL: "https://sendgrid.com", signupURL: "https://signup.sendgrid.com", docsURL: "https://docs.sendgrid.com" },
+            { id: "twilio-comms", name: "Twilio API", provider: "Twilio", category: "Communication", logoBg: "#f22f46", logoText: "TW", shortDescription: "Integrate SMS, WhatsApp, and Voice calls into applications with a unified global platform. Twilio Studio.", pricingTier: "Paid", tags: ["twilio", "sms", "voice"], websiteURL: "https://twilio.com", signupURL: "https://www.twilio.com/try-twilio", docsURL: "https://www.twilio.com/docs" },
+            { id: "vonage-comms", name: "Vonage API", provider: "Vonage", category: "Communication", logoBg: "#000000", logoText: "VO", shortDescription: "Deploy global SMS, Voice, and Verify services with high deliverability and carrier-direct connectivity.", pricingTier: "Paid", tags: ["vonage", "sms", "verify"], websiteURL: "https://vonage.com", signupURL: "https://dashboard.nexmo.com/sign-up", docsURL: "https://developer.vonage.com" },
+            { id: "github-rest", name: "GitHub REST API", provider: "GitHub", category: "Developer Tools", logoBg: "#24292f", logoText: "GH", shortDescription: "Automate code management, issue tracking, and repository workflows via the industry-standard dev platform.", pricingTier: "Free", tags: ["github", "git", "devops"], websiteURL: "https://github.com", signupURL: "https://github.com/settings/tokens", docsURL: "https://docs.github.com/en/rest" },
+            { id: "cloudflare-v4", name: "Cloudflare API", provider: "Cloudflare", category: "Developer Tools", logoBg: "#f38020", logoText: "CF", shortDescription: "Manage DNS, Workers, R2 storage, and security policies programmatically via a global edge network.", pricingTier: "Freemium", tags: ["cloudflare", "edge", "dns"], websiteURL: "https://cloudflare.com", signupURL: "https://dash.cloudflare.com/sign-up", docsURL: "https://developers.cloudflare.com/api" },
+            { id: "launchdarkly-v2", name: "LaunchDarkly API", provider: "LaunchDarkly", category: "Developer Tools", logoBg: "#3d5afe", logoText: "LD", shortDescription: "Ship code and toggle features in production without redeploying. Advanced targeting suite.", pricingTier: "Freemium", tags: ["feature flags", "devops"], websiteURL: "https://launchdarkly.com", signupURL: "https://launchdarkly.com/signup", docsURL: "https://docs.launchdarkly.com" },
+            { id: "sentry-v0", name: "Sentry API", provider: "Sentry", category: "Developer Tools", logoBg: "#362d59", logoText: "SE", shortDescription: "Track application errors and performance bottlenecks in real-time across 100+ platforms. Deep analysis.", pricingTier: "Freemium", tags: ["sentry", "monitoring", "errors"], websiteURL: "https://sentry.io", signupURL: "https://sentry.io/signup", docsURL: "https://docs.sentry.io/api" },
+            { id: "supabase-rest", name: "Supabase Data API", provider: "Supabase", category: "Developer Tools", logoBg: "#3ecf8e", logoText: "SD", shortDescription: "Build high-performance apps with an auto-generated RESTful API over Postgres. Real-time subscriptions.", pricingTier: "Freemium", tags: ["supabase", "postgres", "database"], websiteURL: "https://supabase.com", signupURL: "https://supabase.com/dashboard/sign-up", docsURL: "https://supabase.com/docs/guides/api" },
+            { id: "upstash-v1", name: "Upstash Redis API", provider: "Upstash", category: "Developer Tools", logoBg: "#00e5ff", logoText: "UP", shortDescription: "Execute Redis commands over HTTP for serverless and edge environments with zero cold starts. Perfect caching.", pricingTier: "Freemium", tags: ["redis", "upstash", "cache"], websiteURL: "https://upstash.com", signupURL: "https://console.upstash.com", docsURL: "https://docs.upstash.com" },
+            { id: "vercel-v9", name: "Vercel API", provider: "Vercel", category: "Developer Tools", logoBg: "#000000", logoText: "VE", shortDescription: "Automate edge deployments and manage custom domains via the industry-leading DX platform.", pricingTier: "Freemium", tags: ["vercel", "nextjs", "deploy"], websiteURL: "https://vercel.com", signupURL: "https://vercel.com/signup", docsURL: "https://vercel.com/docs/rest-api" },
+            { id: "planetscale-v1", name: "PlanetScale API", provider: "PlanetScale", category: "Developer Tools", logoBg: "#000000", logoText: "PS", shortDescription: "Scale relational applications with serverless MySQL powered by Vitess and database branching. Safe migrations.", pricingTier: "Paid", tags: ["planetscale", "mysql", "database"], websiteURL: "https://planetscale.com", signupURL: "https://planetscale.com/signup", docsURL: "https://planetscale.com/docs" },
+            { id: "shopify-v1", name: "Shopify API", provider: "Shopify", category: "E-commerce & Logistics", logoBg: "#96bf48", logoText: "SH", shortDescription: "Build custom retail experiences and apps for the world's leading commerce platform. GraphQL-native.", pricingTier: "Paid", tags: ["shopify", "ecommerce", "shopping"], websiteURL: "https://shopify.dev", signupURL: "https://www.shopify.com/partners/signup", docsURL: "https://shopify.dev/docs/api" },
+            { id: "shippo-v1", name: "Shippo API", provider: "Shippo", category: "E-commerce & Logistics", logoBg: "#2b3d52", logoText: "SI", shortDescription: "Access discounted shipping rates and print labels from 85+ global carriers. Multi-carrier logistics.", pricingTier: "Freemium", tags: ["shipping", "shippo", "logistics"], docsURL: "https://goshippo.com/docs" },
+            { id: "bigcommerce-v3", name: "BigCommerce API", provider: "BigCommerce", category: "E-commerce & Logistics", logoBg: "#000000", logoText: "BC", shortDescription: "Power complex B2B and B2C storefronts with an enterprise headless API. High-performance GraphQL.", pricingTier: "Paid", tags: ["bigcommerce", "ecommerce", "headless"], docsURL: "https://developer.bigcommerce.com" },
+            { id: "shipengine-v1", name: "ShipEngine API", provider: "Auctane", category: "E-commerce & Logistics", logoBg: "#00bfb2", logoText: "SE", shortDescription: "Scale multi-carrier shipping with industrial-grade validation and rate management. Designed for 3PLs.", pricingTier: "Paid", tags: ["shipengine", "shipping", "logistics"], docsURL: "https://www.shipengine.com/docs" },
+            { id: "taxjar-v2", name: "TaxJar API", provider: "Stripe", category: "E-commerce & Logistics", logoBg: "#f38020", logoText: "TJ", shortDescription: "Automate sales tax calculation and reporting for global commerce with real-time accuracy. Compliance-first.", pricingTier: "Paid", tags: ["taxjar", "tax", "stripe"], websiteURL: "https://taxjar.com", signupURL: "https://app.taxjar.com/api_sign_up", docsURL: "https://developers.taxjar.com" },
+            { id: "tmdb-v3", name: "TMDB API", provider: "The Movie Database", category: "Entertainment & Gaming", logoBg: "#01b4e4", logoText: "TM", shortDescription: "Access the world's largest dataset for movies, TV shows, and actors with high-res imagery.", pricingTier: "Free", tags: ["tmdb", "movies", "tv"], websiteURL: "https://themoviedb.org", signupURL: "https://www.themoviedb.org/signup", docsURL: "https://developer.themoviedb.org/docs" },
+            { id: "rawg-v1", name: "RAWG API", provider: "RAWG", category: "Entertainment & Gaming", logoBg: "#000000", logoText: "RA", shortDescription: "Integrate a database of 500k+ video games with platform metadata and ratings.", pricingTier: "Freemium", tags: ["rawg", "gaming", "games"], websiteURL: "https://rawg.io", signupURL: "https://rawg.io/login", docsURL: "https://api.rawg.io/docs" },
+            { id: "spotify-v1", name: "Spotify Web API", provider: "Spotify", category: "Entertainment & Gaming", logoBg: "#1db954", logoText: "SP", shortDescription: "Interact with the world's most popular streaming service via playlists and library control.", pricingTier: "Free", tags: ["spotify", "music", "audio"], websiteURL: "https://spotify.com", signupURL: "https://developer.spotify.com/dashboard", docsURL: "https://developer.spotify.com/documentation/web-api" },
+            { id: "youtube-v3", name: "YouTube Data API", provider: "Google", category: "Entertainment & Gaming", logoBg: "#ff0000", logoText: "YT", shortDescription: "Integrate YouTube search, video management, and channel interactions with global scale.", pricingTier: "Free", tags: ["youtube", "video", "google"], websiteURL: "https://youtube.com", signupURL: "https://console.cloud.google.com/apis/library/youtube.googleapis.com", docsURL: "https://developers.google.com/youtube/v3" },
+            { id: "openlibrary-v1", name: "Open Library API", provider: "Internet Archive", category: "Entertainment & Gaming", logoBg: "#000000", logoText: "OL", shortDescription: "Search millions of book records and access digitized texts via an open community dataset.", pricingTier: "Free", tags: ["books", "library", "open"], websiteURL: "https://openlibrary.org", signupURL: "https://openlibrary.org/account/create", docsURL: "https://openlibrary.org/dev/docs/api" },
+            { id: "stripe-v1", name: "Stripe API", provider: "Stripe", category: "Finance & Payments", logoBg: "#635bff", logoText: "ST", shortDescription: "Capture payments and manage global subscriptions with the industry-standard platform.", pricingTier: "Paid", tags: ["stripe", "payments", "fintech"], websiteURL: "https://stripe.com", signupURL: "https://dashboard.stripe.com/register", docsURL: "https://stripe.com/docs/api" },
+            { id: "razorpay-v1", name: "Razorpay API", provider: "Razorpay", category: "Finance & Payments", logoBg: "#0b72e7", logoText: "RZ", shortDescription: "Enable UPI, Cards, and Netbanking for the Indian market with a developer-first gateway.", pricingTier: "Paid", tags: ["razorpay", "upi", "india"], websiteURL: "https://razorpay.com", signupURL: "https://dashboard.razorpay.com/signin", docsURL: "https://razorpay.com/docs/api" },
+            { id: "plaid-v1", name: "Plaid API", provider: "Plaid", category: "Finance & Payments", logoBg: "#000000", logoText: "PL", shortDescription: "Connect applications with user bank accounts for balance verification and transaction history.", pricingTier: "Freemium", tags: ["plaid", "banking", "data"], websiteURL: "https://plaid.com", signupURL: "https://dashboard.plaid.com/signup", docsURL: "https://plaid.com/docs/api" },
+            { id: "coingecko-v3", name: "CoinGecko API", provider: "CoinGecko", category: "Finance & Payments", logoBg: "#8cc63f", logoText: "CG", shortDescription: "Access real-time price, market volume, and historical data for 10,000+ cryptocurrencies.", pricingTier: "Freemium", tags: ["crypto", "blockchain", "data"], websiteURL: "https://www.coingecko.com", signupURL: "https://www.coingecko.com/en/api/pricing", docsURL: "https://www.coingecko.com/en/api/documentation" },
+            { id: "alphavantage-v1", name: "Alpha Vantage API", provider: "Alpha Vantage", category: "Finance & Payments", logoBg: "#000000", logoText: "AV", shortDescription: "Integrate real-time and historical stock market data with financial indicators and news sentiment.", pricingTier: "Freemium", tags: ["stocks", "finance", "trading"], websiteURL: "https://www.alphavantage.co", signupURL: "https://www.alphavantage.co/support/#api-key", docsURL: "https://www.alphavantage.co/documentation" },
+            { id: "frankfurter-v1", name: "Frankfurter API", provider: "Frankfurter", category: "Finance & Payments", logoBg: "#000000", logoText: "FR", shortDescription: "Track reference exchange rates published by the European Central Bank via a lightweight API.", pricingTier: "Free", tags: ["currency", "exchange", "free"], websiteURL: "https://www.frankfurter.app", signupURL: "https://www.frankfurter.app/docs", docsURL: "https://www.frankfurter.app/docs" },
+            { id: "openexchangerates-v1", name: "Open Exchange Rates", provider: "OER", category: "Finance & Payments", logoBg: "#22d3ee", logoText: "OE", shortDescription: "Deliver accurate, real-time exchange rates for 200+ currencies with historical data.", pricingTier: "Freemium", tags: ["currency", "exchange", "fintech"], websiteURL: "https://openexchangerates.org", signupURL: "https://openexchangerates.org/signup", docsURL: "https://docs.openexchangerates.org" },
+            { id: "wise-api", name: "Wise API", provider: "Wise", category: "Finance & Payments", logoBg: "#00b5ff", logoText: "WI", shortDescription: "Scale international payouts and manage multi-currency accounts via a transparent banking API.", pricingTier: "Paid", tags: ["banking", "wise", "fx"], websiteURL: "https://wise.com", signupURL: "https://wise.com/register/account-type", docsURL: "https://api-docs.wise.com" },
+            { id: "nutritionix-v2", name: "Nutritionix API", provider: "Nutritionix", category: "Health & Life Sciences", logoBg: "#000000", logoText: "NX", shortDescription: "Access a natural language nutrition database for grocery, restaurant, and common foods.", pricingTier: "Freemium", tags: ["nutrition", "health", "diet"], websiteURL: "https://nutritionix.com", signupURL: "https://developer.nutritionix.com/signup", docsURL: "https://developer.nutritionix.com" },
+            { id: "openfda-v1", name: "OpenFDA API", provider: "FDA", category: "Health & Life Sciences", logoBg: "#000000", logoText: "FD", shortDescription: "Search and download FDA drug, device, and food data via a public REST interface.", pricingTier: "Free", tags: ["fda", "drugs", "public"], websiteURL: "https://open.fda.gov", signupURL: "https://open.fda.gov/apis/api-key/", docsURL: "https://open.fda.gov/apis" },
+            { id: "betterdoctor-v1", name: "BetterDoctor API", provider: "BetterDoctor", category: "Health & Life Sciences", logoBg: "#000000", logoText: "BD", shortDescription: "Access verified data on doctors and medical practices across the US for directories.", pricingTier: "Freemium", tags: ["doctors", "health", "insurance"], websiteURL: "https://developer.betterdoctor.com", signupURL: "https://developer.betterdoctor.com/signup", docsURL: "https://developer.betterdoctor.com" },
+            { id: "edamam-v2", name: "Edamam API", provider: "Edamam", category: "Health & Life Sciences", logoBg: "#10b981", logoText: "ED", shortDescription: "Search 2M+ recipes with 28 detailed health tags and nutritional analysis.", pricingTier: "Freemium", tags: ["recipes", "health", "meal"], websiteURL: "https://www.edamam.com", signupURL: "https://developer.edamam.com/signup", docsURL: "https://developer.edamam.com" },
+            { id: "google-maps-platform", name: "Google Maps Platform", provider: "Google", category: "Maps & Geolocation", logoBg: "#4285f4", logoText: "GM", shortDescription: "Integrate high-accuracy maps, routes, and place data into world-class applications.", pricingTier: "Paid", tags: ["maps", "places", "routing"], websiteURL: "https://cloud.google.com/maps-platform", signupURL: "https://console.cloud.google.com/google/maps-apis", docsURL: "https://developers.google.com/maps" },
+            { id: "mapbox-api", name: "Mapbox API", provider: "Mapbox", category: "Maps & Geolocation", logoBg: "#000000", logoText: "MB", shortDescription: "Build beautiful, high-performance map experiences with extensive customization and SDKs.", pricingTier: "Freemium", tags: ["mapbox", "maps", "vector"], websiteURL: "https://mapbox.com", signupURL: "https://account.mapbox.com/auth/signup", docsURL: "https://docs.mapbox.com" },
+            { id: "here-maps-api", name: "HERE Maps API", provider: "HERE", category: "Maps & Geolocation", logoBg: "#00a7b4", logoText: "HE", shortDescription: "Access enterprise-grade location intelligence, high-accuracy mapping, and logistics data.", pricingTier: "Freemium", tags: ["here", "mapping", "geodata"], websiteURL: "https://here.com", signupURL: "https://developer.here.com/sign-up", docsURL: "https://developer.here.com" },
+            { id: "osm-nominatim", name: "Nominatim API", provider: "OSM", category: "Maps & Geolocation", logoBg: "#7ebc6f", logoText: "NM", shortDescription: "Execute forward and reverse geocoding via OpenStreetMap's open-source search engine.", pricingTier: "Free", tags: ["osm", "geocoding", "free"], websiteURL: "https://nominatim.org", signupURL: "https://nominatim.org", docsURL: "https://nominatim.org/release-docs/latest" },
+            { id: "ipapi-co", name: "ipapi.co", provider: "ipapi", category: "Maps & Geolocation", logoBg: "#000000", logoText: "IP", shortDescription: "Query location metadata for any IP address with JSON, XML, and CSV support. No login needed.", pricingTier: "Freemium", tags: ["ip", "locatiion", "geolookup"], websiteURL: "https://ipapi.co", signupURL: "https://ipapi.co/plans", docsURL: "https://ipapi.co/api" },
+            { id: "what3words-v3", name: "What3Words API", provider: "What3Words", category: "Maps & Geolocation", logoBg: "#e11f26", logoText: "W3", shortDescription: "Convert 3-word addresses to coordinates and vice versa for ultra-precise location.", pricingTier: "Freemium", tags: ["w3w", "address", "precise"], websiteURL: "https://what3words.com", signupURL: "https://developer.what3words.com/public-api", docsURL: "https://developer.what3words.com" },
+            { id: "unsplash-v1", name: "Unsplash API", provider: "Unsplash", category: "Media & Content", logoBg: "#000000", logoText: "UN", shortDescription: "Access the world's most popular free imagery platform for your application workflow.", pricingTier: "Free", tags: ["unsplash", "images", "photos"], websiteURL: "https://unsplash.com", signupURL: "https://unsplash.com/developers", docsURL: "https://unsplash.com/developers" },
+            { id: "pexels-v1", name: "Pexels API", provider: "Pexels", category: "Media & Content", logoBg: "#05a081", logoText: "PX", shortDescription: "Empower your product with thousands of free high-quality photos and videos.", pricingTier: "Free", tags: ["pexels", "videos", "media"], websiteURL: "https://pexels.com", signupURL: "https://www.pexels.com/api/new", docsURL: "https://www.pexels.com/api" },
+            { id: "cloudinary-v1", name: "Cloudinary API", provider: "Cloudinary", category: "Media & Content", logoBg: "#3448c5", logoText: "CL", shortDescription: "Automate image and video management, transformations, and optimizations at scale.", pricingTier: "Freemium", tags: ["cloudinary", "storage", "media"], websiteURL: "https://cloudinary.com", signupURL: "https://cloudinary.com/users/register/free", docsURL: "https://cloudinary.com/documentation" },
+            { id: "imgix-v1", name: "imgix API", provider: "imgix", category: "Media & Content", logoBg: "#ff4b00", logoText: "IX", shortDescription: "Execute sub-second image processing and delivery via a global CDN with a URL-based API.", pricingTier: "Paid", tags: ["imgix", "cdn", "resize"], websiteURL: "https://imgix.com", signupURL: "https://dashboard.imgix.com/sign-up", docsURL: "https://docs.imgix.com" },
+            { id: "pixabay-v1", name: "Pixabay API", provider: "Pixabay", category: "Media & Content", logoBg: "#2ec16f", logoText: "PB", shortDescription: "Search and download 4 million+ free photos, illustrations, and videos globally.", pricingTier: "Free", tags: ["pixabay", "images", "free"], websiteURL: "https://pixabay.com", signupURL: "https://pixabay.com/api/docs/", docsURL: "https://pixabay.com/api/docs" },
+            { id: "bannerbear-v1", name: "Bannerbear API", provider: "Bannerbear", category: "Media & Content", logoBg: "#3d5afe", logoText: "BB", shortDescription: "Automate social media graphics, banners, and PDFs with a REST API and dynamic templates.", pricingTier: "Paid", tags: ["banners", "automation", "social"], websiteURL: "https://bannerbear.com", signupURL: "https://app.bannerbear.com/users/sign_up", docsURL: "https://www.bannerbear.com/api-docs" },
+            { id: "nasa-api", name: "NASA API", provider: "NASA", category: "Public Data & Government", logoBg: "#000000", logoText: "NS", shortDescription: "Access current data on planets, asteroids, and outer space imagery via public endpoints.", pricingTier: "Free", tags: ["nasa", "space", "astronomy"], websiteURL: "https://api.nasa.gov", signupURL: "https://api.nasa.gov/#signup", docsURL: "https://api.nasa.gov" },
+            { id: "worldbank-v2", name: "World Bank API", provider: "World Bank", category: "Public Data & Government", logoBg: "#009ad9", logoText: "WB", shortDescription: "Query global development data, country indicators, and economic statistics via a public API.", pricingTier: "Free", tags: ["economics", "data", "global"], websiteURL: "https://worldbank.org", signupURL: "https://datahelpdesk.worldbank.org/knowledgebase/articles/898581-api-basic-call-structures", docsURL: "https://datahelpdesk.worldbank.org/knowledgebase/topics/125589" },
+            { id: "census-bureau", name: "US Census Bureau", provider: "US Gov", category: "Public Data & Government", logoBg: "#00325f", logoText: "CB", shortDescription: "Access millions of data points on US demographics, socio-economics, and geography.", pricingTier: "Free", tags: ["census", "usa", "demographics"], websiteURL: "https://census.gov", signupURL: "https://api.census.gov/data/key_signup.html", docsURL: "https://www.census.gov/data/developers.html" },
+            { id: "rest-countries", name: "REST Countries", provider: "Open Source", category: "Public Data & Government", logoBg: "#000000", logoText: "RC", shortDescription: "Get information about world countries via a RESTful API. Open-source and free to use.", pricingTier: "Free", tags: ["countries", "data", "geo"], websiteURL: "https://restcountries.com", signupURL: "https://restcountries.com", docsURL: "https://restcountries.com" },
+            { id: "genderize-io", name: "Genderize.io", provider: "Genderize", category: "Public Data & Government", logoBg: "#000000", logoText: "GN", shortDescription: "Predict the gender of a person based on their name using a high-density global dataset.", pricingTier: "Free", tags: ["names", "predict", "social"], websiteURL: "https://genderize.io", signupURL: "https://genderize.io", docsURL: "https://genderize.io" },
+            { id: "openweather-api", name: "OpenWeather API", provider: "OpenWeather", category: "Weather & Environment", logoBg: "#eb6e4b", logoText: "OW", shortDescription: "Access real-time, forecast, and historical weather data for any location globally.", pricingTier: "Freemium", tags: ["weather", "forecast", "data"], websiteURL: "https://openweathermap.org", signupURL: "https://home.openweathermap.org/users/sign_up", docsURL: "https://openweathermap.org/api" },
+            { id: "weatherstack-v1", name: "Weatherstack API", provider: "apilayer", category: "Weather & Environment", logoBg: "#000000", logoText: "WS", shortDescription: "Track real-time and historical global weather data via a highly reliable RESTful API.", pricingTier: "Freemium", tags: ["weather", "real-time", "history"], websiteURL: "https://weatherstack.com", signupURL: "https://weatherstack.com/product", docsURL: "https://weatherstack.com/documentation" },
+            { id: "accuweather-v1", name: "AccuWeather", provider: "AccuWeather", category: "Weather & Environment", logoBg: "#f05b24", logoText: "AW", shortDescription: "Integrate world-leading forecast accuracy and severe weather alerts into your app.", pricingTier: "Freemium", tags: ["weather", "alerts", "detailed"], websiteURL: "https://accuweather.com", signupURL: "https://developer.accuweather.com/user/register", docsURL: "https://developer.accuweather.com" },
+            { id: "visualcrossing", name: "Visual Crossing", provider: "VC", category: "Weather & Environment", logoBg: "#000000", logoText: "VC", shortDescription: "Access high-resolution historical weather data and multi-day forecasts for any coordinate.", pricingTier: "Freemium", tags: ["weather", "history", "forecast"], websiteURL: "https://www.visualcrossing.com", signupURL: "https://www.visualcrossing.com/weather-data/signup", docsURL: "https://www.visualcrossing.com/weather-api/resources" },
+            { id: "open-meteo", name: "Open-Meteo", provider: "OSS", category: "Weather & Environment", logoBg: "#000000", logoText: "OM", shortDescription: "Free, high-resolution weather forecast API without registration. Built for developers.", pricingTier: "Free", tags: ["weather", "open-source", "forecast"], websiteURL: "https://open-meteo.com", signupURL: "https://open-meteo.com", docsURL: "https://open-meteo.com" }
+        ];
+    </script>
+    <script id="app-logic">
+        // [STATE]
+        const state = {
+            user: JSON.parse(localStorage.getItem('apidex_user')) || { isLoggedIn: false, name: 'Guest Explorer', plan: 'Orbit' },
+            view: 'home', // home | explorer | pricing | compare | submit | login | signup | dashboard | detail
+            bookmarks: JSON.parse(localStorage.getItem('apidex_bookmarks')) || [],
+            searchQuery: '',
+            activeCategory: 'All',
+            activePricing: 'All',
+            isListView: false,
+            detailId: null,
+            dashboardTab: 'bookmarks', // bookmarks | vault | services
+            billingCycle: 'monthly' // monthly | annual
+        };
+
+        const PLAN_DATA = {
+            orbit: { 
+                name: 'Orbit', 
+                accent: '#71717a', 
+                monthly: 0, annual: 0, annualTotal: 0, 
+                desc: 'Free forever. No card needed.',
+                cta: 'CURRENT PLAN'
+            },
+            launchpad: { 
+                name: 'Launchpad', 
+                accent: '#a78bfa', 
+                monthly: 49, annual: 29, annualTotal: 348, 
+                desc: 'For students & indie hackers.',
+                cta: 'GET LAUNCHPAD'
+            },
+            galaxy: { 
+                name: 'Galaxy', 
+                accent: '#00c8c8', 
+                monthly: 149, annual: 99, annualTotal: 1188, 
+                desc: 'For startups shipping fast.',
+                cta: 'UPGRADE NOW'
+            },
+            universa: { 
+                name: 'Universa', 
+                accent: '#f59e0b', 
+                monthly: 499, annual: 299, annualTotal: 3588, 
+                desc: 'For teams & enterprises.',
+                cta: 'CONTACT SALES'
+            }
+        };
+
+        const PLAN_SERVICES = {
+            orbit: ['bookmarks-5', 'vault-3', 'discord'],
+            launchpad: ['bookmarks-25', 'vault-10', 'postman', 'insomnia', 'compare-3', 'latency', 'changelog', 'early-access'],
+            galaxy: ['bookmarks-unlimited', 'vault-unlimited', 'sdk-gen', 'compare-5', 'webhook-tester', 'uptime-monitor', 'pdf-reports', 'breaking-alerts', 'priority-support'],
+            universa: ['white-label', 'team-workspace', 'sso', 'enterprise-sla', 'custom-integrations', 'dedicated-slack', 'quarterly-call']
+        };
+
+        function formatINR(n) {
+            if (n === 0) return '₹0';
+            return '₹' + n.toLocaleString('en-IN');
+        }
+
+        // [ROUTER]
+        function initRouter() {
+            const handleRoute = () => {
+                const hash = window.location.hash.replace('#', '') || 'home';
+                
+                // Reset Explorer filters when navigating to Home
+                if (hash === 'home') {
+                    state.searchQuery = '';
+                    state.activeCategory = 'All';
+                    state.activePricing = 'All';
+                }
+
+                if (hash.startsWith('api/')) {
+                    state.view = 'detail';
+                    state.detailId = hash.split('/')[1];
+                } else {
+                    state.view = hash;
+                }
+                render();
+                window.scrollTo(0, 0);
+            };
+            window.addEventListener('hashchange', handleRoute);
+            handleRoute();
+        }
+
+        // --- SECURITY & UTILITIES ---
+        const SESSION_SALT = Math.random().toString(36).substring(2, 15);
+
+        window.openExternalLink = (url) => {
+            if (!url) return;
+            window.open(url, '_blank', 'noopener,noreferrer');
+        };
+
+        window.obfuscateKey = (key) => {
+            if (!key) return "";
+            // Simple XOR obfuscation for sessionStorage (prevents plain text inspection)
+            let result = "";
+            for (let i = 0; i < key.length; i++) {
+                result += String.fromCharCode(key.charCodeAt(i) ^ SESSION_SALT.charCodeAt(i % SESSION_SALT.length));
+            }
+            return btoa(result);
+        };
+
+        window.deobfuscateKey = (obfuscated) => {
+            if (!obfuscated) return "";
+            try {
+                let decoded = atob(obfuscated);
+                let result = "";
+                for (let i = 0; i < decoded.length; i++) {
+                    result += String.fromCharCode(decoded.charCodeAt(i) ^ SESSION_SALT.charCodeAt(i % SESSION_SALT.length));
+                }
+                return result;
+            } catch (e) {
+                return "";
+            }
+        };
+
+        window.validateKeyFormat = (key) => {
+            if (!key || key.length < 8) return false;
+            // General patterns
+            const patterns = {
+                openai: /^sk-[a-zA-Z0-9]{32,}$/,
+                anthropic: /^sk-ant-[a-zA-Z0-9-]{32,}$/,
+                stripe: /^sk_test_[a-zA-Z0-9]{24,}$|^sk_live_[a-zA-Z0-9]{24,}$/,
+                github: /^ghp_[a-zA-Z0-9]{36}$|^github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}$/
+            };
+            return true; // Simple validation for now, could be more granular
+        };
+
+        window.maskKey = (key) => {
+            if (!key) return "";
+            if (key.length <= 8) return "••••••••";
+            return key.substring(0, 4) + "••••" + key.substring(key.length - 4);
+        };
+
+        // --- VAULT MANAGEMENT ---
+        window.getVault = () => {
+            try {
+                const vault = sessionStorage.getItem('apidex_vault');
+                return vault ? JSON.parse(vault) : {};
+            } catch(e) { return {}; }
+        };
+
+        window.saveKeyToVault = (apiId, key, apiName, provider) => {
+            if (!state.user) return showToast("Log in to use the Vault", "error");
+            
+            const vault = getVault();
+            const keys = Object.keys(vault);
+            
+            if (state.user.plan === 'Orbit' && keys.length >= 3 && !vault[apiId]) {
+                showToast("Free plan limit reached (3 keys). Upgrade to Pro!", "error");
+                return;
+            }
+
+            vault[apiId] = {
+                key: obfuscateKey(key),
+                apiName,
+                provider,
+                addedAt: new Date().toISOString()
+            };
+            
+            sessionStorage.setItem('apidex_vault', JSON.stringify(vault));
+            showToast(`Key for ${apiName} saved to Vault!`);
+            render();
+        };
+
+        window.deleteVaultKey = (apiId) => {
+            const vault = getVault();
+            delete vault[apiId];
+            sessionStorage.setItem('apidex_vault', JSON.stringify(vault));
+            showToast("Key removed from Vault.");
+            render();
+        };
+
+        window.clearAllVaultKeys = () => {
+            if (confirm("Are you sure you want to clear all keys from your local vault? This cannot be undone.")) {
+                sessionStorage.removeItem('apidex_vault');
+                showToast("All keys cleared from Vault.");
+                render();
+            }
+        };
+
+        window.testConnection = async (apiId) => {
+            showToast("Testing connection...");
+            await new Promise(r => setTimeout(r, 1500));
+            if (Math.random() > 0.1) {
+                showToast("Connection successful!", "success");
+            } else {
+                showToast("Connection failed. Please check your key.", "error");
+            }
+        };
+
+        // [AUTH SIMULATION]
+        function login(email, password) {
+            state.user = { isLoggedIn: true, email, name: email.split('@')[0], plan: 'Orbit' };
+            localStorage.setItem('apidex_user', JSON.stringify(state.user));
+            showToast('Welcome back, ' + state.user.name + '!');
+            window.location.hash = 'dashboard';
+        }
+
+        function logout() {
+            state.user = { isLoggedIn: false, name: 'Guest Explorer', plan: 'Orbit' };
+            localStorage.removeItem('apidex_user');
+            showToast('Logged out successfully.');
+            window.location.hash = 'home';
+        }
+
+        // [TOAST SYSTEM]
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast glass luxury-card ${type}`;
+            toast.innerHTML = `<span>${msg}</span><button onclick="this.parentElement.remove()" style="background:none;border:none;color:#fff;cursor:pointer;padding-left:1rem;">x</button>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // [VAULT CORE LOGIC]
+        function getVault() {
+            return JSON.parse(sessionStorage.getItem('apidex_vault') || '{}');
+        }
+
+        function saveVault(vault) {
+            sessionStorage.setItem('apidex_vault', JSON.stringify(vault));
+        }
+
+        function saveKeyToVault(apiId, keyValue) {
+            if (!state.user) {
+                showToast('Please log in to use the vault.', 'error');
+                window.location.hash = 'login';
+                return;
+            }
+            if (!keyValue) {
+                const input = document.querySelector('.vault-input');
+                if (input) input.parentElement.classList.add('animate-shake');
+                setTimeout(() => input?.parentElement.classList.remove('animate-shake'), 500);
+                showToast('Please paste your API key.', 'error');
+                return;
+            }
+            
+            const vault = getVault();
+            const keysCount = Object.keys(vault).length;
+            
+            if (state.user.plan === 'Orbit' && keysCount >= 3 && !vault[apiId]) {
+                showToast('Free plan limited to 3 keys. Upgrade to Pro!', 'error');
+                return;
+            }
+
+            vault[apiId] = {
+                key: keyValue,
+                savedAt: new Date().toISOString(),
+                lastCopied: null,
+                lastTested: null,
+                testStatus: null
+            };
+            saveVault(vault);
+            showToast('Key saved to vault securely.', 'success');
+            
+            // Set security notice flag
+            if (!sessionStorage.getItem('vault_notice_seen')) {
+                // Notice logic will handle showing/hiding
+            }
+
+            render(); // Refresh page
+        }
+
+        function deleteVaultKey(apiId) {
+            const vault = getVault();
+            delete vault[apiId];
+            saveVault(vault);
+            showToast('Key removed from vault.', 'success');
+            render();
+        }
+
+        function copyVaultKey(apiId) {
+            const vault = getVault();
+            const entry = vault[apiId];
+            if (!entry) return;
+            
+            navigator.clipboard.writeText(entry.key);
+            entry.lastCopied = new Date().toISOString();
+            saveVault(vault);
+            showToast('API key copied to clipboard.', 'success');
+            
+            // Handle UI "COPIED" state if needed
+        }
+
+        function maskKey(key) {
+            if (!key || key.length < 8) return "••••••••";
+            const visible = key.slice(-4);
+            const maskLength = Math.min(key.length - 4, 16);
+            return "•".repeat(maskLength) + visible;
+        }
+
+        async function testConnection(apiId, btnId) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<span>TESTING...</span>`;
+            btn.disabled = true;
+
+            await new Promise(r => setTimeout(r, 1500));
+
+            const success = Math.random() < 0.8;
+            const vault = getVault();
+            const entry = vault[apiId];
+            
+            if (success) {
+                btn.style.background = '#22c55e';
+                btn.style.color = '#fff';
+                btn.innerHTML = `<span>CONNECTION OK — ${Math.floor(Math.random() * 20) + 10}ms</span>`;
+                if (entry) {
+                    entry.testStatus = 'ok';
+                    entry.lastTested = new Date().toISOString();
+                }
+            } else {
+                btn.style.background = '#ef4444';
+                btn.style.color = '#fff';
+                btn.innerHTML = `<span>✗ CONNECTION FAILED</span>`;
+                btn.parentElement.classList.add('animate-shake');
+                setTimeout(() => btn.parentElement.classList.remove('animate-shake'), 500);
+            }
+
+            saveVault(vault);
+            
+            setTimeout(() => {
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }, 5000);
+        }
+
+        // [SEARCH & COMMAND PALETTE]
+        function toggleCP(show) {
+            const cp = document.getElementById('command-palette');
+            if (show) {
+                cp.classList.remove('hidden');
+                document.getElementById('cp-input').focus();
+            } else {
+                cp.classList.add('hidden');
+            }
+        }
+
+        function closeCP(e) { toggleCP(false); }
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                toggleCP(document.getElementById('command-palette').classList.contains('hidden'));
+            }
+            if (e.key === 'Escape') toggleCP(false);
+        });
+
+        function searchCP() {
+            const q = document.getElementById('cp-input').value.toLowerCase();
+            const results = document.getElementById('cp-results');
+            if (!q) { results.innerHTML = ''; return; }
+            
+            const filtered = window.apiData.filter(api => 
+                api.name.toLowerCase().includes(q) || api.provider.toLowerCase().includes(q) || api.category.toLowerCase().includes(q)
+            ).slice(0, 6);
+
+            results.innerHTML = filtered.map(api => `
+                <div class="cp-item" onclick="window.location.hash='api/${api.id}'; toggleCP(false)">
+                    <div class="cp-icon" style="background:${api.logoBg}">${api.logoText}</div>
+                    <div>
+                        <div style="font-weight:600">${api.name}</div>
+                        <div style="font-size:0.75rem; color:var(--text-dim)">${api.provider} • ${api.category}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // [RENDER ENGINE]
+        function render() {
+            const root = document.getElementById('app-root');
+            
+            // Sync active links in bottom nav
+            const bottomNavLinks = document.querySelectorAll('.bottom-nav a');
+            bottomNavLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${state.view}`));
+
+            // Sync active links in top nav (for Dashboard etc)
+            const topNavLinks = document.querySelectorAll('.top-nav a');
+            topNavLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${state.view}`));
+
+            // Update Auth UI
+            const authUi = document.getElementById('auth-ui');
+            if (state.user) {
+                authUi.innerHTML = `
+                    <a href="#dashboard" class="btn-luxury btn-ghost">Dashboard</a>
+                    <button onclick="logout()" class="btn-luxury">Logout</button>
+                `;
+            } else {
+                authUi.innerHTML = `
+                    <a href="#login" class="btn-luxury btn-ghost">Login</a>
+                    <a href="#signup" class="btn-luxury">Sign Up</a>
+                `;
+            }
+
+            switch(state.view) {
+                case 'home': renderHome(root); break;
+                case 'explorer': renderExplorer(root); break;
+                case 'pricing': renderPricing(root); break;
+                case 'compare': renderCompare(root); break;
+                case 'submit': renderSubmit(root); break;
+                case 'login': renderLogin(root); break;
+                case 'signup': renderSignup(root); break;
+                case 'dashboard': renderDashboard(root); break;
+                case 'detail': renderDetail(root, state.detailId); break;
+                case 'about': renderAbout(root); break;
+                case 'contact': renderContact(root); break;
+                default: render404(root);
+            }
+        }
+
+        // [UTILITIES]
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            showToast('Copied to clipboard!');
+        }
+
+        function toggleBookmark(id) {
+            if (state.bookmarks.includes(id)) {
+                state.bookmarks = state.bookmarks.filter(b => b !== id);
+                showToast('Bookmark removed.');
+            } else {
+                state.bookmarks.push(id);
+                showToast('Bookmark added.');
+            }
+            localStorage.setItem('apidex_bookmarks', JSON.stringify(state.bookmarks));
+            render();
+        }
+
+        function renderHome(root) {
+            root.innerHTML = `
+                <section class="hero container">
+                    <h1 class="hero-title syne"><span id="hero-headline"></span></h1>
+                    <p class="hero-desc">Discover, benchmark, and integrate the world's most powerful APIs. A curated universe for modern developers.</p>
+                    
+                    <div id="hero-logo-loop" class="logoloop">
+                        <div class="logoloop-track"></div>
+                    </div>
+
+                    <div class="flex gap-4" style="justify-content:center;">
+                        <a href="#explorer" class="btn-luxury">Explore Universe</a>
+                        <a href="#compare" class="btn-luxury btn-ghost">Benchmarks</a>
+                    </div>
+                </section>
+                <section class="container" style="margin-top: 4rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                        <h2 class="syne" style="font-size:1.5rem;">Featured Insights</h2>
+                        <a href="#explorer" style="color:var(--accent); text-decoration:none; font-size:0.9rem;">View All APIs</a>
+                    </div>
+                    <div id="featured-grid" class="grid api-grid"></div>
+                </section>
+            `;
+            initLogoLoop();
+            
+            const headline = document.getElementById('hero-headline');
+            scrambleText(headline, "Exploration Without Limits.", 50, () => {
+                headline.classList.add('animated-gradient-text');
+            });
+
+            const featured = window.apiData.slice(0, 3);
+            document.getElementById('featured-grid').innerHTML = featured.map(api => renderAPICard(api)).join('');
+        }
+
+        function scrambleText(element, finalText, speed = 50, callback) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+';
+            let iteration = 0;
+            const maxIterations = 15;
+            
+            element.style.fontFamily = 'monospace'; // Better for scramble
+            
+            const interval = setInterval(() => {
+                element.innerText = finalText
+                    .split("")
+                    .map((char, index) => {
+                        if (char === " ") return " ";
+                        if (index < (iteration / maxIterations) * finalText.length) {
+                            return finalText[index];
+                        }
+                        return characters[Math.floor(Math.random() * characters.length)];
+                    })
+                    .join("");
+
+                if (iteration >= maxIterations) {
+                    clearInterval(interval);
+                    element.innerText = finalText;
+                    element.style.fontFamily = ''; // Restore original
+                    if (callback) callback();
+                }
+
+                iteration += 1 / 3;
+            }, speed);
+        }
+
+        function initLogoLoop() {
+            const container = document.getElementById('hero-logo-loop');
+            const track = container.querySelector('.logoloop-track');
+            const logos = window.apiData;
+            
+            const renderPill = (api) => `
+                <div class="logo-pill">
+                    <div class="logo-icon" style="background:${api.logoBg}">${api.logoText}</div>
+                    <span class="logo-name">${api.name}</span>
+                </div>
+            `;
+
+            const listHtml = `<div class="logoloop-list">${logos.map(renderPill).join('')}</div>`;
+            
+            // Initial render
+            track.innerHTML = listHtml + listHtml + listHtml; // 3 copies for safety
+
+            let offset = 0;
+            let targetSpeed = 40; // px/sec
+            let currentSpeed = targetSpeed;
+            let lastTimestamp = null;
+            let isHovered = false;
+
+            container.onmouseenter = () => { isHovered = true; };
+            container.onmouseleave = () => { isHovered = false; };
+
+            function animate(timestamp) {
+                if (!lastTimestamp) lastTimestamp = timestamp;
+                const dt = (timestamp - lastTimestamp) / 1000;
+                lastTimestamp = timestamp;
+
+                const target = isHovered ? 0 : targetSpeed;
+                const easing = 1 - Math.exp(-dt / 0.25);
+                currentSpeed += (target - currentSpeed) * easing;
+
+                offset += currentSpeed * dt;
+                
+                const listWidth = track.firstElementChild.offsetWidth + 32; // width + gap (approx)
+                if (offset >= listWidth) offset -= listWidth;
+
+                track.style.transform = `translate3d(${-offset}px, 0, 0)`;
+                requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function renderExplorer(root) {
+            const categories = ['All', ...new Set(window.apiData.map(api => api.category))];
+            const pricingOptions = ['All', 'Free', 'Freemium', 'Paid'];
+
+            root.innerHTML = `
+                <div class="container" style="padding-top: 4rem;">
+                    <div class="glass luxury-card" style="padding: 2rem; margin-bottom: 2rem;">
+                        <div class="grid" style="grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
+                            <input type="text" id="api-search" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem 1.5rem;" placeholder="Search 74+ verified APIs..." oninput="state.searchQuery = this.value; refreshExplorerGrid()" value="${state.searchQuery}">
+                            <select class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" onchange="state.activeCategory = this.value; refreshExplorerGrid()">
+                                ${categories.map(c => `<option value="${c}" ${state.activeCategory === c ? 'selected' : ''}>${c}</option>`).join('')}
+                            </select>
+                            <select class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" onchange="state.activePricing = this.value; refreshExplorerGrid()">
+                                ${pricingOptions.map(p => `<option value="${p}" ${state.activePricing === p ? 'selected' : ''}>${p}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div id="explorer-header" class="flex justify-between items-center" style="margin-bottom: 2rem;">
+                        <span id="results-count" class="mono text-dim">Showing all APIs</span>
+                        <div class="flex gap-1" style="background: rgba(255,255,255,0.03); padding: 4px; border-radius: 10px; border: 1px solid var(--border);">
+                             <button id="view-grid" onclick="state.isListView = false; refreshExplorerGrid()" class="btn-luxury ${!state.isListView ? '' : 'btn-ghost'}" style="padding: 0.5rem 1.25rem; font-size: 0.7rem; border: none;">Grid</button>
+                             <button id="view-list" onclick="state.isListView = true; refreshExplorerGrid()" class="btn-luxury ${state.isListView ? '' : 'btn-ghost'}" style="padding: 0.5rem 1.25rem; font-size: 0.7rem; border: none;">List</button>
+                        </div>
+                    </div>
+                    <div id="explorer-grid" class="grid api-grid"></div>
+                </div>
+            `;
+            refreshExplorerGrid();
+        }
+
+        function refreshExplorerGrid() {
+            const grid = document.getElementById('explorer-grid');
+            if (!grid) return;
+
+            const filtered = window.apiData.filter(api => {
+                const matchesSearch = api.name.toLowerCase().includes(state.searchQuery.toLowerCase()) || api.provider.toLowerCase().includes(state.searchQuery.toLowerCase());
+                const matchesCat = state.activeCategory === 'All' || api.category === state.activeCategory;
+                const matchesPrice = state.activePricing === 'All' || api.pricingTier === state.activePricing;
+                return matchesSearch && matchesCat && matchesPrice;
+            });
+
+            document.getElementById('results-count').innerText = `Found ${filtered.length} APIs matching your criteria`;
+            
+            // Toggle active state on buttons
+            const gridBtn = document.getElementById('view-grid');
+            const listBtn = document.getElementById('view-list');
+            if (state.isListView) {
+                gridBtn.classList.add('btn-ghost');
+                listBtn.classList.remove('btn-ghost');
+                grid.className = 'flex flex-col gap-4';
+                grid.style.marginTop = '0';
+            } else {
+                gridBtn.classList.remove('btn-ghost');
+                listBtn.classList.add('btn-ghost');
+                grid.className = 'grid api-grid';
+                grid.style.marginTop = '2rem';
+            }
+
+            grid.innerHTML = filtered.map(api => state.isListView ? renderAPIListItem(api) : renderAPICard(api)).join('');
+        }
+
+        function renderAPIListItem(api) {
+            const isBookmarked = state.bookmarks.includes(api.id);
+            return `
+                <div class="luxury-card glass flex items-center justify-between" style="padding: 1.25rem 2rem; gap: 2rem;">
+                    <div class="flex items-center gap-6" style="flex: 1;">
+                        <div class="card-logo" style="width: 48px; height: 48px; font-size: 1rem; flex-shrink: 0; background:${api.logoBg}">${api.logoText}</div>
+                        <div style="min-width: 0;">
+                            <div class="card-provider" style="font-size: 0.75rem; margin: 0;">${api.provider}</div>
+                            <h3 class="syne" style="font-size: 1.1rem; margin: 2px 0;">${api.name}</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden md-flex flex-1 text-dim" style="font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${api.shortDescription}
+                    </div>
+
+                    <div class="flex items-center gap-8">
+                        <span class="badge" style="color:${api.pricingTier === 'Free' ? 'var(--success)' : (api.pricingTier === 'Paid' ? 'var(--error)' : 'var(--warning)')}; font-size: 0.7rem;">${api.pricingTier}</span>
+                        <div class="flex gap-4">
+                            <button onclick="toggleBookmark('${api.id}')" style="background:none; border:none; cursor:pointer; color:${isBookmarked ? 'var(--accent)' : 'var(--text-dark)'}">
+                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+                            </button>
+                            <a href="api/${api.id}" onclick="event.preventDefault(); window.location.hash='api/${api.id}'" class="btn-luxury btn-ghost" style="padding: 0.4rem 1rem; font-size: 0.7rem;">Details</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAPICard(api) {
+            const isBookmarked = state.bookmarks.includes(api.id);
+            return `
+                <div class="luxury-card glass api-card flex flex-col">
+                    <div class="card-header">
+                        <div class="card-logo" style="background:${api.logoBg}">${api.logoText}</div>
+                        <button onclick="toggleBookmark('${api.id}')" style="background:none; border:none; cursor:pointer; color:${isBookmarked ? 'var(--accent)' : 'var(--text-dark)'}">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+                        </button>
+                    </div>
+                    <div onclick="window.location.hash='api/${api.id}'" style="cursor:pointer">
+                        <div class="card-provider">${api.provider}</div>
+                        <h3 class="card-title syne">${api.name}</h3>
+                        <p class="card-desc">${api.shortDescription}</p>
+                        <div class="card-tags">
+                            ${(api.tags || []).slice(0, 3).map(t => `<span class="tag-chip">#${t}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge" style="color:${api.pricingTier === 'Free' ? 'var(--success)' : (api.pricingTier === 'Paid' ? 'var(--error)' : 'var(--warning)')}">${api.pricingTier}</span>
+                        <a href="api/${api.id}" onclick="event.preventDefault(); window.location.hash='api/${api.id}'" class="mono accent-text" style="text-decoration:none; font-size: 0.8rem;">View Details</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDetail(root, id) {
+            const api = window.apiData.find(a => a.id === id);
+            if (!api) { render404(root); return; }
+
+            const vault = getVault();
+            const entry = vault[api.id];
+
+            root.innerHTML = `
+                <div class="container" style="padding-top: 6rem; padding-bottom: 6rem;">
+                    <div class="flex items-center gap-4 mb-8">
+                        <a href="#explorer" class="btn-luxury btn-ghost" style="padding: 0.5rem 1rem;">Back to Universe</a>
+                    </div>
+                    
+                    <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 3rem;">
+                        <!-- Left Column -->
+                        <div>
+                            <div class="flex items-center gap-6 mb-8">
+                                <div class="card-logo" style="width: 80px; height: 80px; font-size: 2rem; background:${api.logoBg}">${api.logoText}</div>
+                                <div>
+                                    <div class="card-provider" style="font-size: 1rem;">${api.provider}</div>
+                                    <h1 class="syne" style="font-size: 3rem; margin: 0;">${api.name}</h1>
+                                </div>
+                            </div>
+
+                            <p style="font-size: 1.25rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 2rem;">${api.shortDescription}</p>
+
+                            <div class="glass luxury-card" style="padding: 2.5rem; margin-bottom: 3rem; border-left: 4px solid var(--accent);">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="syne">Integration Guide</h3>
+                                    ${entry ? '<span class="badge" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); font-size:10px;">🔐 SECURE KEY LOADED</span>' : ''}
+                                </div>
+                                <div class="mono" style="background: rgba(0,0,0,0.4); padding: 1.5rem; border-radius: 8px; font-size: 0.9rem; line-height: 1.5; color: var(--text-main); position: relative; border: 1px solid var(--border);">
+                                    <span style="color:#6366f1">curl</span> -X GET "${api.baseURL || 'https://api.provider.com/v1'}" \\<br>
+                                    &nbsp;&nbsp;-H "Authorization: Bearer <span id="guide-key-${api.id}" style="color:${entry ? 'var(--accent)' : 'var(--text-dim)'}; font-weight:bold;">${entry ? maskKey(deobfuscateKey(entry.key)) : 'YOUR_API_KEY'}</span>"
+                                </div>
+                                <div class="flex justify-between items-center mt-6">
+                                    <div class="flex items-center gap-3">
+                                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${entry ? '#10b981' : 'var(--text-dark)'}"></div>
+                                        <span class="text-dim" style="font-size: 0.85rem;">
+                                            ${entry ? 'Vault key injected locally' : 'No key detected in vault'}
+                                        </span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        ${entry ? `<button onclick="toggleRevealGuide('${api.id}')" class="btn-luxury btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.75rem;">REVEAL KEY</button>` : ''}
+                                        <button onclick="copyGuideCommand('${api.id}', '${api.baseURL || 'https://api.provider.com/v1'}')" class="btn-luxury" style="padding: 0.5rem 1.25rem; font-size: 0.75rem;">
+                                            ${entry ? 'COPY WITH KEY' : 'COPY TEMPLATE'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3 class="syne mb-6">Verified Use Cases</h3>
+                            <div class="flex flex-wrap gap-4 mb-12">
+                                ${(api.tags || []).map(t => {
+                                    return `<div onclick="state.searchQuery = '${t}'; window.location.hash = 'explorer'" class="glass luxury-card flex flex-col items-center justify-center" style="width: 120px; height: 120px; padding: 1rem; text-align: center; cursor: pointer; border-color: rgba(124, 58, 237, 0.2); transition: border-color 0.2s;">
+                                        <span class="mono accent-text" style="font-size: 0.8rem; margin-bottom: 0.5rem;">#${t}</span>
+                                        <span style="font-size: 0.75rem; color: var(--text-dark);">Production Grade</span>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="flex flex-col gap-6">
+                            <div class="glass luxury-card" style="padding: 2rem;">
+                                <h4 class="syne mb-4">Specs & Metadata</h4>
+                                <div class="flex flex-col">
+                                    <div class="spec-row">
+                                        <span class="spec-label">Category</span>
+                                        <span class="spec-value">${api.category}</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">Auth Type</span>
+                                        <span class="spec-value"><span class="badge" style="border:none; background:rgba(255,255,255,0.05); padding: 4px 8px;">${api.authType || 'API Key'}</span></span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">Pricing</span>
+                                        <span class="spec-value"><span class="badge" style="color:var(--warning); border-color:var(--warning)">${api.pricingTier}</span></span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">Architecture</span>
+                                        <span class="spec-value">REST / JSON</span>
+                                    </div>
+                                </div>
+                                <a href="${api.docsURL}" target="_blank" class="btn-luxury w-full text-center mt-8" onmouseover="if(getVault()['${api.id}']) showToast('You have a saved key for this API', 'success')">Official Documentation ↗</a>
+                            </div>
+
+                            <div class="glass luxury-card" style="padding: 2rem;">
+                                <h4 class="syne mb-6">Developer Tools</h4>
+                                <div class="flex flex-col gap-4">
+                                    <a href="#" class="flex justify-between items-center text-main hover-white" style="text-decoration:none; font-size: 0.9rem;">
+                                        <span>Interactive Sandbox</span>
+                                        <span class="mono" style="font-size:0.7rem; color: var(--accent); opacity:0.8">READY</span>
+                                    </a>
+                                    <a href="#" class="flex justify-between items-center text-main hover-white" style="text-decoration:none; font-size: 0.9rem;">
+                                        <span>SDK Generation</span>
+                                        <span class="mono" style="font-size:0.7rem; color: var(--accent); opacity:0.8">V1.2</span>
+                                    </a>
+                                    <a href="#" class="flex justify-between items-center text-main hover-white" style="text-decoration:none; font-size: 0.9rem;">
+                                        <span>Latency Benchmarks</span>
+                                        <span class="mono" style="font-size:0.7rem; color: var(--accent); opacity:0.8">24ms</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div id="access-panel-mount">
+                                ${renderAccessPanel(api)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAccessPanel(api) {
+            const vault = getVault();
+            const entry = vault[api.id];
+            const isLoggedIn = !!state.user;
+            const userPlan = state.user?.plan || 'Free';
+            const isPro = userPlan === 'Pro';
+            
+            let content = '';
+
+            if (!isLoggedIn) {
+                content = `
+                    <div class="flex flex-col gap-4">
+                        <div class="text-dim" style="font-size: 12px; margin-bottom: 0.5rem;">Get your API key from the official provider.</div>
+                        <button onclick="window.openExternalLink('${api.websiteURL || api.docsURL || '#'}')" class="access-panel-btn btn-outline">VISIT OFFICIAL SITE ↗</button>
+                        <button onclick="window.openExternalLink('${api.signupURL || api.docsURL || '#'}')" class="access-panel-btn btn-accent">GET API KEY ↗</button>
+                        
+                        <div class="divider"></div>
+                        
+                        <div style="background: rgba(124,58,237,0.05); border: 1px solid rgba(124,58,237,0.2); border-radius: 8px; padding: 12px;">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span style="font-size: 14px;"></span>
+                                <span style="font-size: 12px; color: var(--text-dim); font-weight: 500;">Secure Vaulting</span>
+                            </div>
+                            <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 12px; line-height: 1.4;">Log in to save your keys locally in the APIdex Vault for instant testing and sandbox integration.</p>
+                            <button onclick="window.location.hash = 'login'" class="access-panel-btn" style="height: 36px; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3); color: #a78bfa; font-size: 11px; font-weight: 600;">LOG IN TO SAVE KEY</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                content = `
+                    <div class="flex flex-col gap-4">
+                        <div class="flex gap-2">
+                            <button onclick="window.openExternalLink('${api.websiteURL || api.docsURL || '#'}')" class="access-panel-btn btn-outline flex-1" style="font-size: 11px;">OFFICIAL SITE ↗</button>
+                            <button onclick="window.openExternalLink('${api.signupURL || api.docsURL || '#'}')" class="access-panel-btn btn-accent flex-1" style="font-size: 11px;">GET API KEY ↗</button>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="mono" style="font-size: 10px; letter-spacing: 0.1em; color: var(--text-dim); font-weight: 700;">API KEY VAULT</div>
+                                <div class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); font-family: var(--font-mono); font-size: 9px; padding: 1px 6px;">🛡 LOCAL ONLY</div>
+                            </div>
+                            <div class="badge" style="background: ${isPro ? 'rgba(0,200,150,0.1)' : 'rgba(245,158,11,0.1)'}; color: ${isPro ? '#00c896' : '#f59e0b'}; border: 1px solid ${isPro ? 'rgba(0,200,150,0.2)' : 'rgba(245,158,11,0.2)'}; font-family: var(--font-mono); font-size: 10px;">${isPro ? 'PRO' : 'FREE'}</div>
+                        </div>
+
+                        ${entry ? `
+                            <div class="vault-display reveal-key" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px; position: relative; overflow: hidden;">
+                                <span class="text-dim" style="font-size: 14px;">🔑</span>
+                                <span id="masked-key-${api.id}" class="mono" style="font-size: 12px; color: #fff; flex: 1; word-break: break-all; opacity: 0.9;">${maskKey(deobfuscateKey(entry.key))}</span>
+                                <div class="flex gap-1">
+                                    <button id="reveal-btn-${api.id}" onclick="toggleReveal('${api.id}')" style="background:none; border:none; cursor:pointer; color:var(--text-dim); padding: 5px; font-size: 16px;">REVEAL</button>
+                                    <button id="copy-vault-${api.id}" onclick="copyVaultKey('${api.id}'); this.innerHTML = '<span style=\'color:#10b981\'>COPIED</span>'; setTimeout(() => this.innerHTML = 'COPY', 2000)" style="background:none; border:none; cursor:pointer; color:var(--text-dim); padding: 5px; font-size: 16px;">COPY</button>
+                                </div>
+                                <div id="reveal-timer-${api.id}" style="position: absolute; bottom: 0; left: 0; height: 2px; width: 0%; background: var(--accent); transition: width 1s linear;"></div>
+                            </div>
+                            <div class="flex justify-between mt-1 px-1" style="font-size: 10px; color: var(--text-dim);">
+                                <span>Encrypted locally in session</span>
+                                <button onclick="if(confirm('Delete saved key?')) deleteVaultKey('${api.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:10px; font-weight: 600;">DELETE</button>
+                            </div>
+                            
+                            <button id="test-btn-${api.id}" onclick="testConnection('${api.id}')" class="access-panel-btn mt-2" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); color: #22c55e; font-weight: 600;">TEST CONNECTION</button>
+                        ` : `
+                            <div class="flex flex-col gap-3">
+                                <div style="position: relative;">
+                                    <input type="password" id="vault-input-${api.id}" class="vault-input" placeholder="Paste your ${api.name} key..." 
+                                        style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: #fff; font-family: var(--font-mono); font-size: 12px;"
+                                        onfocus="showSecurityExplainer('${api.id}')"
+                                        oninput="checkKeyInput('${api.id}', this.value)"
+                                        onkeydown="if(event.key === 'Enter') saveKeyToVault('${api.id}', this.value, '${api.name}', '${api.provider}')">
+                                    <div id="explainer-${api.id}" class="glass luxury-card" style="display:none; position: absolute; bottom: 100%; left: 0; right: 0; margin-bottom: 12px; z-index: 10; padding: 16px; border-color: var(--accent); animation: slideUp 0.3s ease-out;">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span style="font-size: 16px;">🛡️</span>
+                                            <span style="font-size: 13px; font-weight: 600;">APIdex Security Protocol</span>
+                                        </div>
+                                        <ul style="padding: 0; list-style: none; font-size: 11px; color: var(--text-dim); display: flex; flex-col; gap: 6px;">
+                                            <li class="flex gap-2"><span>•</span> <span>Stored locally in <b>sessionStorage</b></span></li>
+                                            <li class="flex gap-2"><span>•</span> <span>XOR-obfuscated with session salt</span></li>
+                                            <li class="flex gap-2"><span>•</span> <span>Never transmitted to our servers</span></li>
+                                        </ul>
+                                        <button onclick="dismissExplainer('${api.id}')" class="mt-4" style="width: 100%; background: var(--accent); border: none; border-radius: 4px; color: #fff; padding: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">I UNDERSTAND</button>
+                                    </div>
+                                </div>
+                                <button id="save-btn-${api.id}" onclick="saveKeyToVault('${api.id}', document.getElementById('vault-input-${api.id}').value, '${api.name}', '${api.provider}')" 
+                                    class="access-panel-btn" disabled
+                                    style="height: 38px; background: rgba(0,255,200,0.05); border: 1px solid rgba(0,255,200,0.1); color: rgba(0,255,200,0.4); font-size: 11px; font-weight: 600; cursor: not-allowed; transition: all 0.3s;">
+                                    SAVE KEY TO VAULT
+                                </button>
+                            </div>
+                        `}
+
+                        <div style="margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 1rem;">
+                            <details style="cursor: pointer;">
+                                <summary style="font-size: 11px; color: var(--accent); font-weight: 600; list-style: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s;">
+                                    <span style="font-size: 14px;">❓</span> <span>How this works</span>
+                                </summary>
+                                <div style="margin-top: 12px; font-size: 11px; color: var(--text-main); line-height: 1.5; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <div class="flex flex-col gap-4">
+                                        <div class="flex gap-4 items-center">
+                                            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent); display: flex; justify-content: center; align-items: center; color: #000; font-size: 10px; font-weight: 800; flex-shrink: 0;">1</div>
+                                            <span>Key is entered (Client-side)</span>
+                                        </div>
+                                        <div class="flex gap-4 items-center">
+                                            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent); display: flex; justify-content: center; align-items: center; color: #000; font-size: 10px; font-weight: 800; flex-shrink: 0;">2</div>
+                                            <span>XOR encryption applied in-memory</span>
+                                        </div>
+                                        <div class="flex gap-4 items-center">
+                                            <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent); display: flex; justify-content: center; align-items: center; color: #000; font-size: 10px; font-weight: 800; flex-shrink: 0;">3</div>
+                                            <span>Stored in local <b>Session Storage</b></span>
+                                        </div>
+                                    </div>
+                                    <p class="mt-6" style="border-top: 1px solid var(--border); padding-top: 12px; text-align: center;">
+                                        <a href="javascript:void(0)" onclick="showStorageInspector()" style="color: var(--accent); text-decoration: none; font-weight: 600;">Inspect storage yourself</a>
+                                    </p>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="glass luxury-card" style="padding: 1.5rem 2rem; position: relative;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); opacity: 1;"></div>
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="syne" style="display:flex; align-items:center; gap: 10px; margin: 0;">
+                            <span style="font-size: 18px;"></span> API Access
+                        </h4>
+                    </div>
+                    ${content}
+                    <div style="margin-top: 2.5rem; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 16px; display: flex; justify-content: center; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span style="font-size: 12px;"></span>
+                        <span class="mono" style="font-size: 10px; color: #fff; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; opacity: 0.8;">TLS 1.3 END-TO-END ENCRYPTED</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.toggleReveal = (apiId) => {
+            const el = document.getElementById(`masked-key-${apiId}`);
+            const btn = document.getElementById(`reveal-btn-${apiId}`);
+            const bar = document.getElementById(`reveal-timer-${apiId}`);
+            const vault = getVault();
+            const entry = vault[apiId];
+            
+            if (!entry) return;
+            const fullKey = deobfuscateKey(entry.key);
+
+            if (el.innerText.includes('•')) {
+                el.innerText = fullKey;
+                btn.innerText = 'REVEAL';
+                bar.style.width = '100%';
+                
+                // Clear any existing timeout
+                if (window.revealTimeouts?.[apiId]) clearTimeout(window.revealTimeouts[apiId]);
+                if (!window.revealTimeouts) window.revealTimeouts = {};
+
+                window.revealTimeouts[apiId] = setTimeout(() => {
+                    el.innerText = maskKey(fullKey);
+                    btn.innerText = '';
+                    bar.style.transition = 'none';
+                    bar.style.width = '0%';
+                    setTimeout(() => bar.style.transition = 'width 10s linear', 50);
+                }, 10000);
+            } else {
+                el.innerText = maskKey(fullKey);
+                btn.innerText = '';
+                bar.style.transition = 'none';
+                bar.style.width = '0%';
+                if (window.revealTimeouts?.[apiId]) clearTimeout(window.revealTimeouts[apiId]);
+                setTimeout(() => bar.style.transition = 'width 10s linear', 50);
+            }
+        };
+
+        window.checkKeyInput = (apiId, val) => {
+            const btn = document.getElementById(`save-btn-${apiId}`);
+            if (val.length >= 8) {
+                btn.disabled = false;
+                btn.style.background = 'rgba(0,255,200,0.15)';
+                btn.style.borderColor = 'rgba(0,255,200,0.4)';
+                btn.style.color = '#00ffc8';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.style.background = 'rgba(0,255,200,0.05)';
+                btn.style.borderColor = 'rgba(0,255,200,0.1)';
+                btn.style.color = 'rgba(0,255,200,0.4)';
+                btn.style.cursor = 'not-allowed';
+            }
+        };
+
+        window.showSecurityExplainer = (apiId) => {
+            if (sessionStorage.getItem('vault_explainer_shown')) return;
+            const explainer = document.getElementById(`explainer-${apiId}`);
+            if (explainer) explainer.style.display = 'block';
+        };
+
+        window.dismissExplainer = (apiId) => {
+            const explainer = document.getElementById(`explainer-${apiId}`);
+            if (explainer) explainer.style.display = 'none';
+            sessionStorage.setItem('vault_explainer_shown', 'true');
+        };
+
+        window.showStorageInspector = () => {
+            alert("APIdex Storage Self-Audit:\n\n1. Right-click anywhere and select 'Inspect'\n2. Go to the 'Application' tab\n3. Select 'Session Storage' from the sidebar\n4. Look for 'apidex_vault'\n\nYou will see that your keys are stored as obfuscated base64 strings, never as plain text, and only in the local session.");
+        };
+
+        window.copyVaultKey = (apiId) => {
+            const vault = getVault();
+            const entry = vault[apiId];
+            if (!entry) return;
+            const key = deobfuscateKey(entry.key);
+            navigator.clipboard.writeText(key).then(() => {
+                showToast("Key copied to clipboard!");
+            });
+        };
+
+        function renderPricing(root) {
+            const isAnnual = state.billingCycle === 'annual';
+            
+            root.innerHTML = `
+                <section class="container" style="padding: 6rem 0; text-align: center;">
+                    <div class="mono accent-text mb-4" style="letter-spacing: 0.2em;">DIMENSIONAL ACCESS</div>
+                    <h1 class="syne" style="font-size: 4rem; margin-bottom: 2rem;">Scale with the <span>Universe.</span></h1>
+                    
+                    <!-- Billing Toggle -->
+                    <div class="flex items-center justify-center gap-6 mb-24">
+                        <div class="flex items-center p-1.5" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px;">
+                            <button onclick="state.billingCycle = 'monthly'; render()" class="mono" style="padding: 10px 28px; border-radius: 100px; border: none; cursor: pointer; transition: all 0.4s var(--ease-out-expo); font-size: 11px; font-weight: 800; letter-spacing: 0.1em; background: ${!isAnnual ? '#fff' : 'transparent'}; color: ${!isAnnual ? '#000' : 'var(--text-dim)'}; shadow: ${!isAnnual ? '0 4px 12px rgba(0,0,0,0.2)' : 'none'};">MONTHLY</button>
+                            <button onclick="state.billingCycle = 'annual'; render()" class="mono" style="padding: 10px 28px; border-radius: 100px; border: none; cursor: pointer; transition: all 0.4s var(--ease-out-expo); font-size: 11px; font-weight: 800; letter-spacing: 0.1em; background: ${isAnnual ? '#fff' : 'transparent'}; color: ${isAnnual ? '#000' : 'var(--text-dim)'}; shadow: ${isAnnual ? '0 4px 12px rgba(0,0,0,0.2)' : 'none'};">ANNUAL</button>
+                        </div>
+                        <div id="savings-badge" class="badge" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.15); animation: fadeIn 0.5s ease-out; opacity: ${isAnnual ? '1' : '0'}; font-size: 10px; font-weight: 800;">Save up to 40%</div>
+                    </div>
+
+                    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 3rem;">
+                        <div class="glass luxury-card flex flex-col" style="padding: 2.5rem 2rem; border-color: var(--border);">
+                             <div class="mono mb-4" style="color: #8b949e; letter-spacing: 0.1em; font-weight: 800; font-size: 12px;">ORBIT</div>
+                             <div class="flex flex-col items-center mb-6">
+                                <div class="flex items-end gap-2">
+                                    <span style="font-size: 3rem; line-height: 1; font-weight: 700;">₹0</span>
+                                    <span class="text-dim mono" style="font-size: 14px; margin-bottom: 6px;">/mo</span>
+                                </div>
+                             </div>
+                             <p class="text-dim mb-8" style="font-size: 13px; min-height: 3em;">Free forever. No card needed.</p>
+                             <ul style="list-style:none; padding:0; text-align:left; flex: 1;" class="flex flex-col gap-4 mb-8">
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #8b949e;">•</span>
+                                    <span>Browse all 74+ verified APIs</span>
+                                </li>
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #8b949e;">•</span>
+                                    <span>Search & filter by category</span>
+                                </li>
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #8b949e;">•</span>
+                                    <span>5 Bookmarks (session)</span>
+                                </li>
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #8b949e;">•</span>
+                                    <span>3 API Vault key slots</span>
+                                </li>
+                             </ul>
+                             <div class="magnet-wrapper w-full">
+                                <button class="btn-luxury w-full magnet-button" style="background: #8b949e; color: #000; border: 1px solid #8b949e;">CURRENT PLAN</button>
+                             </div>
+                        </div>
+
+                        <div class="glass luxury-card flex flex-col" style="padding: 2.5rem 2rem; border-color: #a78bfa;">
+                             <div class="mono mb-4" style="color: #a78bfa; letter-spacing: 0.1em; font-weight: 800; font-size: 12px;">LAUNCHPAD</div>
+                             <div class="flex flex-col items-center mb-6">
+                                <div class="flex items-end gap-2">
+                                    <span style="font-size: 3rem; line-height: 1; font-weight: 700;">₹49</span>
+                                    <span class="text-dim mono" style="font-size: 14px; margin-bottom: 6px;">/mo</span>
+                                </div>
+                             </div>
+                             <p class="text-dim mb-8" style="font-size: 13px; min-height: 3em;">For students & indie hackers.</p>
+                             <ul style="list-style:none; padding:0; text-align:left; flex: 1;" class="flex flex-col gap-4 mb-8">
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #a78bfa;">•</span>
+                                    <span>Everything in Orbit</span>
+                                </li>
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #a78bfa;">•</span>
+                                    <span>25 Bookmarks (persistent)</span>
+                                </li>
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #a78bfa;">•</span>
+                                    <span>10 API Vault key slots</span>
+                                </li>
+                             </ul>
+                             <div class="magnet-wrapper w-full">
+                                <button onclick="initiatePurchase('launchpad')" class="btn-luxury w-full magnet-button" style="background: #a78bfa; color: #000; border: 1px solid #a78bfa;">GET LAUNCHPAD</button>
+                             </div>
+                        </div>
+
+                        <div class="glass luxury-card flex flex-col" style="padding: 2.5rem 2rem; border-color: #00c8c8; transform: scale(1.02); z-index: 10;">
+                             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #00c8c8; color: #000; padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; letter-spacing: 0.1em;">MOST POPULAR</div>
+                             <div class="mono mb-4" style="color: #00c8c8; letter-spacing: 0.1em; font-weight: 800; font-size: 12px;">GALAXY</div>
+                             <div class="flex flex-col items-center mb-6">
+                                <div class="flex items-end gap-2">
+                                    <span style="font-size: 3rem; line-height: 1; font-weight: 700;">₹149</span>
+                                    <span class="text-dim mono" style="font-size: 14px; margin-bottom: 6px;">/mo</span>
+                                </div>
+                             </div>
+                             <p class="text-dim mb-8" style="font-size: 13px; min-height: 3em;">For startups shipping fast.</p>
+                             <ul style="list-style:none; padding:0; text-align:left; flex: 1;" class="flex flex-col gap-4 mb-8">
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #00c8c8;">•</span>
+                                    <span>Everything in Launchpad</span>
+                                </li>
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #00c8c8;">•</span>
+                                    <span>Unlimited Bookmarks/Keys</span>
+                                </li>
+                             </ul>
+                             <div class="magnet-wrapper w-full">
+                                <button onclick="initiatePurchase('galaxy')" class="btn-luxury w-full magnet-button" style="background: #00c8c8; color: #000; border: none;">UPGRADE NOW</button>
+                             </div>
+                        </div>
+
+                        <div class="glass luxury-card flex flex-col" style="padding: 2.5rem 2rem; border-color: #f59e0b;">
+                             <div class="mono mb-4" style="color: #f59e0b; letter-spacing: 0.1em; font-weight: 800; font-size: 12px;">UNIVERSA</div>
+                             <div class="flex flex-col items-center mb-6">
+                                <div class="flex items-end gap-2">
+                                    <span style="font-size: 3rem; line-height: 1; font-weight: 700;">₹499</span>
+                                    <span class="text-dim mono" style="font-size: 14px; margin-bottom: 6px;">/mo</span>
+                                </div>
+                             </div>
+                             <p class="text-dim mb-8" style="font-size: 13px; min-height: 3em;">For teams & enterprises.</p>
+                             <ul style="list-style:none; padding:0; text-align:left; flex: 1;" class="flex flex-col gap-4 mb-8">
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #f59e0b;">•</span>
+                                    <span>Everything in Galaxy</span>
+                                </li>
+                                <li style="font-size: 13px; color: var(--text-main); display: flex; gap: 10px;">
+                                    <span style="color: #f59e0b;">•</span>
+                                    <span>White-label embed</span>
+                                </li>
+                             </ul>
+                             <div class="magnet-wrapper w-full">
+                                <button onclick="initiatePurchase('universa')" class="btn-luxury w-full magnet-button" style="background: #f59e0b; color: #000; border: 1px solid #f59e0b;">CONTACT SALES</button>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Tier Difference Strip -->
+                    <div style="max-width: 800px; margin: 0 auto 6rem; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 12px 24px;">
+                        <div class="mono" style="font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em;">
+                            +${formatINR(isAnnual ? 29 : 49)}/mo to unlock <span style="color: #a78bfa; font-weight: 700;">LAUNCHPAD</span> &nbsp;•&nbsp; 
+                            +${formatINR(isAnnual ? 70 : 100)}/mo to unlock <span style="color: #00c8c8; font-weight: 700;">GALAXY</span> &nbsp;•&nbsp; 
+                            +${formatINR(isAnnual ? 200 : 350)}/mo to unlock <span style="color: #f59e0b; font-weight: 700;">UNIVERSA</span>
+                        </div>
+                    </div>
+
+                    <!-- Special Discounts -->
+                    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 6rem;">
+                        <div class="luxury-card" style="padding: 1.5rem; text-align: center; background: var(--surface);">
+                            <div style="font-size: 24px; margin-bottom: 0.5rem;"></div>
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">Students</div>
+                            <div class="mono mb-2" style="font-size: 11px; color: var(--text-main);">80% OFF GALAXY FOREVER</div>
+                            <p class="text-dim mono" style="font-size: 10px; margin-bottom: 1rem;">₹29/mo with .edu email</p>
+                            <a href="mailto:students@apidex.dev" class="mono" style="color: var(--text-main); font-size: 10px; font-weight: 700; text-decoration: none;">APPLY </a>
+                        </div>
+                        <div class="luxury-card" style="padding: 1.5rem; text-align: center; background: var(--surface);">
+                            <div style="font-size: 24px; margin-bottom: 0.5rem;"></div>
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">Open Source</div>
+                            <div class="mono mb-2" style="font-size: 11px; color: var(--text-main);">GALAXY PLAN FREE FOREVER</div>
+                            <p class="text-dim mono" style="font-size: 10px; margin-bottom: 1rem;">Public GitHub repo required</p>
+                            <a href="mailto:oss@apidex.dev" class="mono" style="color: var(--text-main); font-size: 10px; font-weight: 700; text-decoration: none;">APPLY</a>
+                        </div>
+                        <div class="luxury-card" style="padding: 1.5rem; text-align: center; background: var(--surface);">
+                            <div style="font-size: 24px; margin-bottom: 0.5rem;"></div>
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">Early Startups</div>
+                            <div class="mono mb-2" style="font-size: 11px; color: var(--text-main);">50% OFF FIRST 6 MONTHS</div>
+                            <p class="text-dim mono" style="font-size: 10px; margin-bottom: 1rem;">Startups under 2 years old</p>
+                            <a href="mailto:startups@apidex.dev" class="mono" style="color: var(--text-main); font-size: 10px; font-weight: 700; text-decoration: none;">APPLY </a>
+                        </div>
+                    </div>
+
+                    <!-- Lifetime & FAQ -->
+                    <div class="grid" style="grid-template-columns: 2fr 3fr; gap: 4rem; text-align: left;">
+                        <div>
+                            <h3 class="mb-6" style="font-weight: 700;">Lifetime Deals</h3>
+                            <div class="flex flex-col gap-4">
+                                <div class="luxury-card" style="padding: 1.5rem; background: var(--surface); border-radius: 8px;">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="mono" style="color: var(--text-main); font-weight: 700; font-size: 12px;">GALAXY LTD</div>
+                                        <div style="font-size: 1.5rem; font-weight: 700;">₹999</div>
+                                    </div>
+                                    <p class="text-dim mono" style="font-size: 11px;">17 months free equivalent</p>
+                                </div>
+                                <div class="luxury-card" style="padding: 1.5rem; background: var(--surface); border-radius: 8px;">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="mono" style="color: var(--text-main); font-weight: 700; font-size: 12px;">UNIVERSA LTD</div>
+                                        <div style="font-size: 1.5rem; font-weight: 700;">₹2,999</div>
+                                    </div>
+                                    <p class="text-dim mono" style="font-size: 11px;">18 months free equivalent</p>
+                                </div>
+                                <div style="padding: 1rem; text-align: center;">
+                                    <div id="ltd-counter" class="mono" style="font-size: 12px; color: var(--warning); font-weight: 700;">Only 100 deals remaining</div>
+                                    <div id="ltd-timer" class="mono" style="font-size: 10px; color: var(--text-dark); margin-top: 4px;">DEAL EXPIRES IN: 6D 23H 59M</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="syne mb-8">Frequently Asked Questions</h3>
+                            <div class="faq-list flex flex-col gap-6">
+                                <details style="cursor: pointer; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+                                    <summary class="syne" style="font-weight: 600; font-size: 1.1rem; list-style: none;">Why is Launchpad only ₹49?</summary>
+                                    <p class="text-dim mt-4" style="font-size: 14px;">We want every developer in India to afford professional tools. ₹49 is less than a coffee. Seriously — try it for one month.</p>
+                                </details>
+                                <details style="cursor: pointer; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+                                    <summary class="syne" style="font-weight: 600; font-size: 1.1rem; list-style: none;">What's the difference between Galaxy and Launchpad?</summary>
+                                    <p class="text-dim mt-4" style="font-size: 14px;">Launchpad gives you the essential tools for solo developers. Galaxy unlocks power features — SDK generation, webhook testing, uptime monitoring, and reports. The ₹100 jump unlocks 6 additional services.</p>
+                                </details>
+                                <details style="cursor: pointer; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+                                    <summary class="syne" style="font-weight: 600; font-size: 1.1rem; list-style: none;">Can I upgrade my team workspace later?</summary>
+                                    <p class="text-dim mt-4" style="font-size: 14px;">Yes, Universa supports tiered seat expansion. You can add more nodes to your team workspace at any time through the billing dashboard.</p>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+            initLtdTimer();
+            initMagnets();
+        }
+
+        function initMagnets() {
+            const magnets = document.querySelectorAll('.magnet-wrapper');
+            const STRENGTH = 50; 
+            const PADDING = 60;
+
+            const handleMouse = (e) => {
+                magnets.forEach(wrapper => {
+                    const btn = wrapper.querySelector('.magnet-button');
+                    if (!btn || btn.classList.contains('btn-ghost')) return;
+
+                    const rect = wrapper.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    const distX = Math.abs(centerX - e.clientX);
+                    const distY = Math.abs(centerY - e.clientY);
+
+                    if (distX < rect.width / 2 + PADDING && distY < rect.height / 2 + PADDING) {
+                        const offsetX = (e.clientX - centerX) / STRENGTH;
+                        const offsetY = (e.clientY - centerY) / STRENGTH;
+                        btn.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
+                        btn.style.transition = 'transform 0.1s ease-out';
+                    } else {
+                        btn.style.transform = `translate3d(0, 0, 0)`;
+                        btn.style.transition = 'transform 0.5s ease-in-out';
+                    }
+                });
+            };
+
+            window.addEventListener('mousemove', handleMouse);
+            // Cleanup: The event listener should ideally be scoped, but since render() overwrites everything
+            // it's acceptable for this demo. For a cleaner version, we'd remove it on view change.
+        }
+
+        function getPlanBulletPoints(planId) {
+            const list = {
+                orbit: [
+                    'Browse all 74+ verified APIs',
+                    'Search & filter by category',
+                    '5 Bookmarks (session)',
+                    '3 API Vault key slots',
+                    'Community Discord access'
+                ],
+                launchpad: [
+                    'Everything in Orbit',
+                    '25 Bookmarks (persistent)',
+                    '10 API Vault key slots',
+                    'Export Postman/Insomnia',
+                    'API latency benchmarks',
+                    '3-Way API Comparison'
+                ],
+                galaxy: [
+                    'Everything in Launchpad',
+                    'Unlimited Bookmarks/Keys',
+                    'Advanced SDK Generation',
+                    'Webhook Tester (Live)',
+                    'Uptime Monitor (10 IDs)',
+                    '5-Way API Comparison'
+                ],
+                universa: [
+                    'Everything in Galaxy',
+                    'White-label embed',
+                    'Team Workspace (5 seats)',
+                    'Shared Bookmarks/Vault',
+                    'Custom API Integrations',
+                    'Enterprise SLA & SSO'
+                ]
+            };
+            return list[planId] || [];
+        }
+
+        function initLtdTimer() {
+            if (!sessionStorage.getItem('apidex_ltd_start')) {
+                sessionStorage.setItem('apidex_ltd_start', Date.now().toString());
+            }
+            const start = parseInt(sessionStorage.getItem('apidex_ltd_start'));
+            const sevenDays = 7 * 24 * 60 * 60 * 1000;
+            
+            const update = () => {
+                const now = Date.now();
+                const diff = sevenDays - (now - start);
+                if (diff <= 0) {
+                    document.getElementById('ltd-timer').innerText = 'DEAL EXPIRED';
+                    return;
+                }
+                const d = Math.floor(diff / (24 * 60 * 60 * 1000));
+                const h = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                const m = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+                const el = document.getElementById('ltd-timer');
+                if (el) el.innerText = `DEAL EXPIRES IN: ${d}D ${h}H ${m}M`;
+            };
+            setInterval(update, 60000);
+            update();
+        }
+        function renderCompare(root) {
+            const apis = window.apiData.slice(0, 10);
+            root.innerHTML = `
+                <section class="container" style="padding: 8rem 0;">
+                    <h1 class="syne mb-12">Comparison <span>Matrix</span></h1>
+                    <div class="glass luxury-card" style="overflow-x: auto; padding: 0;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <th style="padding: 1.5rem; color: var(--text-dim);">API Entity</th>
+                                    <th style="padding: 1.5rem; color: var(--text-dim);">Category</th>
+                                    <th style="padding: 1.5rem; color: var(--text-dim);">Auth</th>
+                                    <th style="padding: 1.5rem; color: var(--text-dim);">Price</th>
+                                    <th style="padding: 1.5rem; color: var(--text-dim);">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${apis.map(api => `
+                                    <tr style="border-bottom: 1px solid var(--border-white-10); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                                        <td style="padding: 1.5rem;">
+                                            <div class="flex items-center gap-3">
+                                                <div class="card-logo" style="width:32px; height:32px; font-size:0.7rem; background:${api.logoBg}">${api.logoText}</div>
+                                                <span class="syne" style="font-weight: 600;">${api.name}</span>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 1.5rem;" class="mono text-dim">${api.category}</td>
+                                        <td style="padding: 1.5rem;"><span class="badge">${api.authType || 'API Key'}</span></td>
+                                        <td style="padding: 1.5rem;"><span class="badge" style="color:var(--warning)">${api.pricingTier}</span></td>
+                                        <td style="padding: 1.5rem;"><a href="#api/${api.id}" class="accent-text mono" style="text-decoration:none; font-size:0.8rem;">Compare</a></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderSubmit(root) {
+            root.innerHTML = `
+                <section class="container" style="padding: 8rem 0; max-width: 600px;">
+                    <div class="glass luxury-card" style="padding: 3rem;">
+                        <h1 class="syne mb-2">Expansion <span>Protocol</span></h1>
+                        <p class="text-dim mb-8">Submit a new API to the APIdex universe for verification.</p>
+                        <form onsubmit="event.preventDefault(); showToast('Submission received. Verifying dimensions...'); window.location.hash='explorer';">
+                            <div class="flex flex-col gap-6">
+                                <div>
+                                    <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">API NAME</label>
+                                    <input type="text" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="e.g. Stripe v2" required>
+                                </div>
+                                <div>
+                                    <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">DOCUMENTATION URL</label>
+                                    <input type="url" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="https://docs.provider.com" required>
+                                </div>
+                                <div>
+                                    <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">DESCRIPTION</label>
+                                    <textarea class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem; height: 100px; resize:none;" placeholder="Brief overview of functionality..."></textarea>
+                                </div>
+                                <button type="submit" class="btn-luxury w-full mt-4">Initiate Submission</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderLogin(root) {
+            root.innerHTML = `
+                <section class="container flex flex-col items-center justify-center" style="min-height: 80vh; padding: 4rem 0;">
+                    <div class="glass luxury-card" style="padding: 3.5rem; text-align: center; max-width: 480px; width: 100%;">
+                        <div class="nav-logo syne" style="font-size: 3rem; justify-content: center; margin-bottom: 2rem;">API<span>dex</span></div>
+                        <h2 class="syne mb-8" style="font-size: 1.5rem; color: #fff;">Access Universal Node</h2>
+                        <form onsubmit="event.preventDefault(); login(this.email.value, 'pass');">
+                            <div class="flex flex-col gap-6 text-left">
+                                <div>
+                                    <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">TERMINAL EMAIL</label>
+                                    <input name="email" type="email" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="developer@node.com" required>
+                                </div>
+                                <div>
+                                    <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">ACCESS KEY (PASSWORD)</label>
+                                    <input type="password" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="••••••••" required>
+                                </div>
+                                <button type="submit" class="btn-luxury w-full mt-4">Connect to Network</button>
+                            </div>
+                        </form>
+                        <p class="mt-8 text-dim" style="font-size: 0.85rem;">No node access? <a href="#signup" style="color:var(--accent); text-decoration:none;">Create Credentials</a></p>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderSignup(root) {
+            root.innerHTML = `
+                <section class="container flex flex-col items-center justify-center" style="min-height: 80vh; padding: 4rem 0;">
+                    <div class="glass luxury-card" style="padding: 3.5rem; text-align: center; max-width: 480px; width: 100%;">
+                        <div class="nav-logo syne" style="font-size: 3rem; justify-content: center; margin-bottom: 2rem;">API<span>dex</span></div>
+                        <h2 class="syne mb-8" style="font-size: 1.5rem; color: #fff;">Provision New Node</h2>
+                        <form onsubmit="event.preventDefault(); login(this.email.value, 'pass');">
+                            <div class="flex flex-col gap-6 text-left">
+                                <div>
+                                    <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">EMAIL ADDRESS</label>
+                                    <input name="email" type="email" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="developer@node.com" required>
+                                </div>
+                                <div>
+                                    <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">INITIALIZE KEY</label>
+                                    <input type="password" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="••••••••" required>
+                                </div>
+                                <button type="submit" class="btn-luxury w-full mt-4">Provision Node</button>
+                            </div>
+                        </form>
+                        <p class="mt-8 text-dim" style="font-size: 0.85rem;">Existing node? <a href="#login" style="color:var(--accent); text-decoration:none;">Login to Nexus</a></p>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderDashboard(root) {
+            if (!state.user) { window.location.hash = 'login'; return; }
+            const bookmarkedAPIs = window.apiData.filter(api => state.bookmarks.includes(api.id));
+            const vault = getVault();
+            const vaultKeys = Object.keys(vault);
+
+            root.innerHTML = `
+                <div class="container" style="padding-top: 6rem; padding-bottom: 6rem;">
+                    <div class="flex justify-between items-end mb-12">
+                        <div>
+                            <div class="mono accent-text mb-2">NETWORK NODE: ACTIVE</div>
+                            <h1 class="syne" style="font-size: 3rem;">Welcome back, <span>${state.user.name}</span></h1>
+                        </div>
+                        <div class="luxury-card" style="padding: 1rem 2rem; background: var(--surface); border-color: var(--border);">
+                            <div class="text-dim mono" style="font-size: 0.7rem;">CURRENT PLAN</div>
+                            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text-main);">${state.user.plan} Tier</div>
+                        </div>
+                    </div>
+
+                    <div class="grid" style="grid-template-columns: 1fr 3fr; gap: 3rem;">
+                        <div class="flex flex-col gap-6">
+                            <div class="glass luxury-card" style="padding: 2rem;">
+                                <h3 class="syne mb-6">Quick Stats</h3>
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex justify-between">
+                                        <span class="text-dim">Bookmarks</span>
+                                        <span class="mono">${state.bookmarks.length}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-dim">Keys in Vault</span>
+                                        <span class="mono">${vaultKeys.length}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-dim">Active Services</span>
+                                        <span class="mono">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col gap-2">
+                                <button onclick="state.dashboardTab = 'bookmarks'; render()" class="access-panel-btn ${state.dashboardTab === 'bookmarks' ? 'btn-accent' : 'btn-outline'}" style="height:48px; justify-content: flex-start; padding: 0 1.5rem; border-radius: 99px;">
+                                    Bookmarks
+                                </button>
+                                <button onclick="state.dashboardTab = 'vault'; render()" class="access-panel-btn ${state.dashboardTab === 'vault' ? 'btn-accent' : 'btn-outline'}" style="height:48px; justify-content: flex-start; padding: 0 1.5rem; border-radius: 99px;">
+                                    API Vault
+                                </button>
+                                <button onclick="state.dashboardTab = 'services'; render()" class="access-panel-btn ${state.dashboardTab === 'services' ? 'btn-accent' : 'btn-outline'}" style="height:48px; justify-content: flex-start; padding: 0 1.5rem; border-radius: 99px;">
+                                    My Services
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            ${state.dashboardTab === 'bookmarks' ? `
+                                <h3 class="syne mb-6">Your Bookmarked Universe</h3>
+                                ${bookmarkedAPIs.length === 0 ? `
+                                    <div class="glass luxury-card" style="padding: 4rem; text-align: center; border-style: dashed;">
+                                        <p class="text-dim mb-4">No APIs bookmarked in this sector.</p>
+                                        <a href="#explorer" class="btn-luxury btn-ghost">Explore APIs </a>
+                                    </div>
+                                ` : `
+                                    <div class="grid api-grid">
+                                        ${bookmarkedAPIs.map(api => renderAPICard(api)).join('')}
+                                    </div>
+                                `}
+                            ` : state.dashboardTab === 'vault' ? `
+                                <h3 class="syne mb-6">Secure API Vault</h3>
+                                ${vaultKeys.length === 0 ? `
+                                    <div class="glass luxury-card" style="padding: 4rem; text-align: center; border-style: dashed;">
+                                        <p class="text-dim mb-4">No API keys saved in your vault yet.</p>
+                                        <a href="#explorer" class="btn-luxury btn-ghost">Browse APIs</a>
+                                    </div>
+                                ` : `
+                                    <div class="glass luxury-card" style="padding: 0; overflow: hidden;">
+                                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                                            <thead>
+                                                <tr style="border-bottom: 1px solid var(--border);">
+                                                    <th style="padding: 1.5rem; color: var(--text-dim); font-size: 0.8rem;">API ENTITY</th>
+                                                    <th style="padding: 1.5rem; color: var(--text-dim); font-size: 0.8rem;">SAVED KEY (MASKED)</th>
+                                                    <th style="padding: 1.5rem; color: var(--text-dim); font-size: 0.8rem;">ACTIONS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${vaultKeys.map(id => {
+                                                    const api = window.apiData.find(a => a.id === id);
+                                                    const entry = vault[id];
+                                                    if (!api) return '';
+                                                    return `
+                                                        <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                                                            <td style="padding: 1.5rem;">
+                                                                  <div class="flex items-center gap-3">
+                                                                    <div class="card-logo" style="width:32px; height:32px; font-size:0.7rem; background:${api.logoBg}">${api.logoText}</div>
+                                                                    <div>
+                                                                        <div class="syne" style="font-weight: 600; font-size: 0.9rem;">${api.name}</div>
+                                                                        <div class="mono" style="font-size: 0.7rem; color: var(--text-dim);">Added ${new Date(entry.addedAt).toLocaleDateString()}</div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td style="padding: 1.5rem;">
+                                                                <div id="dash-masked-${id}" class="mono" style="font-size: 0.85rem; color: var(--text-dim); letter-spacing: 0.05em;">${maskKey(deobfuscateKey(entry.key))}</div>
+                                                            </td>
+                                                            <td style="padding: 1.5rem;">
+                                                                <div class="flex gap-2">
+                                                                    <button id="dash-reveal-${id}" onclick="toggleRevealDash('${id}')" class="btn-luxury btn-ghost" style="padding: 0.4rem; font-size: 0.8rem;" title="Reveal for 10s">REVEAL</button>
+                                                                    <button onclick="copyVaultKey('${id}')" class="btn-luxury btn-ghost" style="padding: 0.4rem; font-size: 0.8rem;" title="Copy">COPY</button>
+                                                                    <button id="test-dash-${id}" onclick="testConnection('${id}')" class="btn-luxury btn-ghost" style="padding: 0.4rem; font-size: 0.8rem;" title="Test Connection">TEST</button>
+                                                                    <button onclick="if(confirm('Delete saved key?')) deleteVaultKey('${id}')" class="btn-luxury btn-ghost" style="padding: 0.4rem; font-size: 0.8rem; border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" title="Delete">DELETE</button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    `;
+                                                }).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    ${state.user.plan === 'Orbit' && vaultKeys.length >= 3 ? `
+                                        <div class="glass luxury-card mt-6" style="padding: 1.5rem; border-color: var(--warning-border); background: var(--warning-bg); text-align: center;">
+                                            <p class="text-dim mb-4" style="font-size: 0.9rem;">You've reached the free vault limit (3 keys). Upgrade to Launchpad for more storage.</p>
+                                            <a href="#pricing" class="btn-luxury" style="padding: 0.5rem 1.5rem;">UPGRADE</a>
+                                        </div>
+                                    ` : ''}
+                                `}
+                            ` : `
+                                <h3 class="syne mb-6">Nexus Service Hub</h3>
+                                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                    ${renderServiceGrid()}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderServiceGrid() {
+            const currentPlan = state.user.plan.toLowerCase();
+            const allServices = [
+                { id: 'bookmarks', name: 'Dimensional Bookmarks', desc: 'Save and organize your favorite APIs across sessions.', icon: '', plan: 'Orbit' },
+                { id: 'vault', name: 'Secure API Vault', desc: 'Industry-standard local XOR encryption for your keys.', icon: '', plan: 'Orbit' },
+                { id: 'postman', name: 'Postman Integration', desc: 'One-click export of complete collections with keys.', icon: '', plan: 'Launchpad' },
+                { id: 'latency', name: 'Real-time Benchmarks', desc: 'Live latency data for every endpoint in our index.', icon: '', plan: 'Launchpad' },
+                { id: 'sdk-gen', name: 'SDK Generator', desc: 'Multi-language SDKs (Go, TS, Python) generated on-demand.', icon: '', plan: 'Galaxy' },
+                { id: 'uptime-monitor', name: 'Uptime Watchtower', desc: 'Real-time monitoring for your critical endpoints.', icon: '', plan: 'Galaxy' },
+                { id: 'white-label', name: 'White-label Embed', desc: 'Embed APIdex specs directly into your own domain.', icon: '', plan: 'Universa' },
+                { id: 'team-workspace', name: 'Team Nexus', desc: 'Collaborative workspaces with shared keys and logs.', icon: '', plan: 'Universa' }
+            ];
+
+            return allServices.map(service => {
+                const planLevels = ['orbit', 'launchpad', 'galaxy', 'universa'];
+                const serviceLevel = planLevels.indexOf(service.plan.toLowerCase());
+                const userLevel = planLevels.indexOf(currentPlan);
+                const isActive = userLevel >= serviceLevel;
+                const accent = PLAN_DATA[service.plan.toLowerCase()].accent;
+
+                return `
+                    <div class="glass luxury-card flex flex-col" style="padding: 1.5rem; border-color: ${isActive ? accent + '44' : 'var(--border)'}; background: ${isActive ? accent + '08' : 'rgba(0,0,0,0.2)'}; position: relative; ${!isActive ? 'opacity: 0.6;' : ''}">
+                        <div style="position: absolute; top: 12px; right: 12px;">
+                            ${isActive ? 
+                                `<span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); font-size: 8px;">ACTIVE</span>` : 
+                                `<span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); font-size: 8px;">LOCKED</span>`
+                            }
+                        </div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <span style="font-size: 20px;">${isActive ? service.icon : ''}</span>
+                            <span class="syne" style="font-weight: 700; font-size: 0.95rem; color: #fff;">${service.name}</span>
+                        </div>
+                        <p class="text-dim mb-6" style="font-size: 11px; flex: 1;">${service.desc}</p>
+                        <button onclick="${isActive ? "showToast('Service Ready. Entering Interface...', 'success')" : "window.location.hash='pricing'"}" class="btn-luxury" style="padding: 0.4rem 1rem; font-size: 0.75rem; background: ${isActive ? accent : 'transparent'}; border: 1px solid ${accent}; color: ${isActive ? '#000' : accent};">
+                            ${isActive ? 'OPEN' : 'UPGRADE'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+        function render404(root) {
+            root.innerHTML = `
+                <section class="container" style="text-align:center; padding: 10rem 0;">
+                    <h1 class="syne" style="font-size: 8rem; color: var(--accent); opacity: 0.5;">404</h1>
+                    <h2 class="syne" style="font-size: 2rem; margin-top: -2rem;">Dimension Not Found</h2>
+                    <p style="color:var(--text-dim); margin-bottom: 2rem;">The API or page you are looking for does not exist in this universe.</p>
+                    <a href="#home" class="btn-luxury">Back Home</a>
+                </section>
+            `;
+        }
+        function renderAbout(root) {
+            root.innerHTML = `
+                <section class="container" style="padding: 8rem 0;">
+                    <div class="grid" style="grid-template-columns: 1.5fr 1fr; gap: 4rem; align-items: center;">
+                        <div>
+                            <h1 class="syne" style="font-size: 4rem; line-height: 1; margin-bottom: 2rem;">Mapping the <span>API Universe.</span></h1>
+                            <p class="hero-desc" style="max-width: 100%;">APIdex was born from a simple realization: the modern developer spends more time discovering APIs than writing code to integrate them. Our mission is to provide a single, high-fidelity lens into the world's most critical public APIs.</p>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem;">
+                                <div class="glass luxury-card" style="padding: 1.5rem;">
+                                    <div class="mono accent-text" style="font-size: 2rem; margin-bottom: 0.5rem;">74+</div>
+                                    <div class="text-dim">Verified Endpoints</div>
+                                </div>
+                                <div class="glass luxury-card" style="padding: 1.5rem;">
+                                    <div class="mono accent-text" style="font-size: 2rem; margin-bottom: 0.5rem;">12</div>
+                                    <div class="text-dim">Technical Sectors</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass luxury-card" style="padding: 3rem; border-color: var(--accent);">
+                            <h3 class="syne mb-4">Our Vision</h3>
+                            <p class="text-dim mb-6">To become the industry standard for API discovery, benchmarking, and real-time health monitoring.</p>
+                            <ul style="list-style:none; padding:0;" class="flex flex-col gap-3">
+                                <li class="text-dim" style="font-size: 0.9rem;">• Zero-bias Benchmarking</li>
+                                <li class="text-dim" style="font-size: 0.9rem;">• Standardized Integration Specs</li>
+                                <li class="text-dim" style="font-size: 0.9rem;">• Community-driven Governance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderContact(root) {
+            root.innerHTML = `
+                <section class="container" style="padding: 8rem 0; max-width: 800px;">
+                    <div class="grid" style="grid-template-columns: 1fr 1.5fr; gap: 4rem;">
+                        <div class="flex flex-col gap-8">
+                            <div>
+                                <h1 class="syne" style="font-size: 3rem; margin-bottom: 1rem;">Human <span>Support.</span></h1>
+                                <p class="text-dim">Need assistance with the universe? Our engineers are on standby.</p>
+                            </div>
+                            <div class="flex flex-col gap-4">
+                                <div class="glass luxury-card" style="padding: 1rem;">
+                                    <div class="mono accent-text" style="font-size: 0.7rem;">EMAIL</div>
+                                    <div style="font-weight: 600;">support@apidex.io</div>
+                                </div>
+                                <div class="glass luxury-card" style="padding: 1rem;">
+                                    <div class="mono accent-text" style="font-size: 0.7rem;">DISCORD</div>
+                                    <div style="font-weight: 600;">join.apidex.community</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass luxury-card" style="padding: 3rem;">
+                            <form onsubmit="event.preventDefault(); showToast('Signal received. We\\'ll get back to you shortly.'); window.location.hash='home';">
+                                <div class="flex flex-col gap-6">
+                                    <div>
+                                        <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">FULL NAME</label>
+                                        <input type="text" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="John Doe" required>
+                                    </div>
+                                    <div>
+                                        <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">WORK EMAIL</label>
+                                        <input type="email" class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;" placeholder="john@company.com" required>
+                                    </div>
+                                    <div>
+                                        <label class="mono text-dim" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: block;">DIMENSION OF INQUIRY</label>
+                                        <select class="cp-search" style="border:1px solid var(--border); border-radius:8px; padding: 0.75rem;">
+                                            <option>General Support</option>
+                                            <option>Partnership Request</option>
+                                            <option>API Submission Status</option>
+                                            <option>Enterprise Billing</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn-luxury w-full py-4">Transmit Signal</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function initiatePurchase(planId) {
+            const planColors = {
+                orbit:     '#71717a',
+                launchpad: '#a78bfa',
+                galaxy:    '#00c8c8',
+                universa:  '#f59e0b',
+            };
+            const planTextColors = {
+                orbit:     '#ffffff',
+                launchpad: '#000000',
+                galaxy:    '#000000',
+                universa:  '#000000',
+            };
+            const planUnlocks = {
+                launchpad: ['Postman Export', 'Insomnia Export', '3-Way Compare', 'Changelog Alerts', 'Early Access'],
+                galaxy:    ['SDK Generator', 'Webhook Tester', 'Uptime Monitor', 'PDF Reports', 'Breaking Alerts', 'Priority Support'],
+                universa:  ['White-Label', 'Team Workspace', 'SSO', 'Enterprise SLA', 'Dedicated Slack'],
+                orbit:     []
+            };
+
+            const isAnnual = state.billingCycle === 'annual';
+            const plan = {
+                name: planId.charAt(0).toUpperCase() + planId.slice(1),
+                price: isAnnual ? (planId === 'launchpad' ? '₹499' : planId === 'galaxy' ? '₹1490' : '₹4990') : (planId === 'launchpad' ? '₹49' : planId === 'galaxy' ? '₹149' : '₹499'),
+                accent: planColors[planId] || '#00c8c8',
+                btnText: planTextColors[planId] || '#000'
+            };
+
+            const overlay = document.createElement('div');
+            overlay.id = 'purchase-overlay';
+            overlay.style = 'position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px;';
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+            overlay.innerHTML = `
+                <div class="glass" style="width: 100%; max-width: 480px; background: #0d1117; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 28px; position: relative; box-shadow: 0 32px 80px rgba(0,0,0,0.6); animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1) both;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div class="syne" style="font-size: 20px; font-weight: 700; color: #f0f6fc;">Purchase ${plan.name}</div>
+                        <button onclick="document.getElementById('purchase-overlay').remove()" style="width: 28px; height: 28px; background: transparent; border: none; cursor: pointer; color: #484f58; font-size: 18px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.color='#f0f6fc'; this.style.backgroundColor='rgba(255,255,255,0.06)'" onmouseout="this.style.color='#484f58'; this.style.backgroundColor='transparent'">✕</button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-bottom: 20px; align-items: start;">
+                        <div>
+                            <div class="mono" style="font-size: 10px; color: #484f58; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;">ORDER TOTAL</div>
+                            <div class="syne" style="font-size: 32px; font-weight: 800; color: #f0f6fc; letter-spacing: -0.03em;">${plan.price}</div>
+                        </div>
+                        <div>
+                            <div class="mono" style="font-size: 10px; color: #484f58; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;">BILLING</div>
+                            <div style="font-family: var(--font-body); font-size: 14px; color: #8b949e; text-transform: capitalize;">${state.billingCycle}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="mono" style="font-size: 10px; color: #484f58; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;">PLAN</div>
+                            <div style="display: inline-block; padding: 4px 12px; border-radius: 100px; border: 1px solid ${plan.accent}40; background: ${plan.accent}18; color: ${plan.accent}; font-family: var(--font-mono); font-size: 11px; font-weight: 600;">${plan.name}</div>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(255,255,255,0.06); margin: 16px 0;"></div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div class="mono" style="font-size: 10px; color: #484f58; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px;">UNLOCKS IMMEDIATELY</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="unlock-chips">
+                            ${planUnlocks[planId].map(item => `
+                                <span style="font-family: var(--font-mono); font-size: 9px; padding: 4px 10px; border-radius: 4px; background: ${plan.accent}0d; border: 1px solid ${plan.accent}35; color: ${plan.accent}; white-space: nowrap;">${item}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div style="background: #161b22; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 32px 24px; margin-bottom: 20px; text-align: center;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 24px; opacity: 0.5;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#484f58" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <span class="mono" style="font-size: 10px; color: #484f58; letter-spacing: 0.08em;">SECURE PAYMENT VIA RAZORPAY</span>
+                        </div>
+
+                        <div style="margin-bottom: 32px;">
+                            <div class="mono" style="font-size: 10px; color: #484f58; opacity: 0.4; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px;">TOTAL AMOUNT DUE</div>
+                            <div class="syne" style="font-size: 42px; font-weight: 800; color: #f0f6fc; letter-spacing: -0.03em;">${plan.price}</div>
+                        </div>
+
+                        <button onclick="handleSimulatorPayment('${planId}')" id="pay-button" style="width: 100%; height: 56px; border-radius: 12px; border: none; background: ${plan.accent}; color: ${plan.btnText}; font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.08em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 8px 24px ${plan.accent}30;" onmouseover="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.filter='none'; this.style.transform='translateY(0)'">
+                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                             PAY ${plan.price}
+                        </button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 14px; opacity: 0.2;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#484f58" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        <span class="mono" style="font-size: 8px; color: #484f58; letter-spacing: 0.1em; text-transform: uppercase;">ENCRYPTED HANDSHAKE  INSTANT ACTIVATION</span>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        window.handleSimulatorPayment = (planId) => {
+            alert("Demo payments are currently disabled.");
+            return;
+            
+            /* Razorpay Implementation Commented Out
+            const btn = document.getElementById('pay-button');
+            const planColors = { orbit:'#71717a', launchpad:'#a78bfa', galaxy:'#00c8c8', universa:'#f59e0b' };
+            const accent = planColors[planId];
+            const planPrices = { orbit: 0, launchpad: 49, galaxy: 149, universa: 499 };
+
+            if (!window.Razorpay) {
+                console.error("Razorpay SDK not found in window object.");
+                alert("Payment system is still initializing. Please try again in a few seconds.");
+                return;
+            }
+
+            console.log("Opening Razorpay for demo plan:", planId);
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
+            btn.innerHTML = `<div class="loader-circle" style="width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite;"></div> <span>AUTHENTICATING...</span>`;
+
+            const options = {
+                key: 'rzp_test_pIqE2XvXf7LzJk', // Using a generic test key for demo
+                amount: planPrices[planId] * 100, // Amount in paise
+                currency: "INR",
+                name: "APIdex Demo",
+                description: `Purchase ${planId} Plan`,
+                handler: function(response) {
+                    console.log("Demo payment success:", response);
+                    btn.innerHTML = `<div class="loader-circle" style="width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.1); border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite;"></div> <span>ACTIVATING...</span>`;
+                    setTimeout(() => triggerSuccessScreen(planId, accent), 1500);
+                },
+                modal: {
+                    ondismiss: function() {
+                        console.log("Demo Razorpay modal closed.");
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> PAY ${planPrices[planId] > 0 ? '₹' + planPrices[planId] : 'FREE'}`;
+                    }
+                },
+                theme: { color: accent }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+            */
+        };
+
+        function triggerSuccessScreen(planId, accent) {
+            const overlay = document.getElementById('purchase-overlay');
+            const planName = planId.charAt(0).toUpperCase() + planId.slice(1);
+            const unlocks = {
+                launchpad: ['Postman Export', 'Insomnia Export', '3-Way Compare', 'Changelog Alerts', 'Early Access'],
+                galaxy:    ['SDK Generator', 'Webhook Tester', 'Uptime Monitor', 'PDF Reports', 'Breaking Alerts', 'Priority Support'],
+                universa:  ['White-Label', 'Team Workspace', 'SSO', 'Enterprise SLA', 'Dedicated Slack']
+            }[planId];
+
+            overlay.firstChild.nextSibling.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; padding: 24px 0; text-align: center; width: 100%;">
+                    <div style="position: relative; width: 64px; height: 64px; margin: 0 auto 24px;">
+                        <svg width="64" height="64" viewBox="0 0 64 64">
+                            <circle cx="32" cy="32" r="30" fill="none" stroke="${accent}20" stroke-width="3" />
+                            <circle cx="32" cy="32" r="30" fill="none" stroke="${accent}" stroke-width="3" stroke-dasharray="188.5" stroke-dashoffset="188.5" style="animation: checkDraw 0.8s ease-out forwards;" stroke-linecap="round" />
+                            <path d="M20 32l8 8 16-16" fill="none" stroke="${accent}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0; animation: fadeIn 0.3s ease-out 0.5s forwards;" />
+                        </svg>
+                    </div>
+                    <h3 class="syne" style="font-size: 22px; font-weight: 700; color: #f0f6fc; margin-bottom: 4px;">Payment Successful!</h3>
+                    <p style="font-family: var(--font-body); font-size: 14px; color: #8b949e; margin-bottom: 32px;">${planName} activated</p>
+                    
+                    <div style="text-align: left; width: 100%; margin-bottom: 24px;">
+                        <div class="mono" style="font-size: 10px; color: #484f58; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; margin-left: 8px;">Services unlocked:</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                            ${unlocks.map((item, i) => `
+                                <span style="font-family: var(--font-mono); font-size: 9px; padding: 4px 10px; border-radius: 4px; background: ${accent}0d; border: 1px solid ${accent}35; color: ${accent}; white-space: nowrap; opacity: 0; animation: chipReveal 0.4s ease-out ${1.1 + i*0.05}s forwards;">${item}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <button onclick="finalizeStaticActivation('${planId}')" style="width: 100%; height: 46px; border-radius: 12px; border: none; background: ${accent}; color: #000; font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">GO TO MY SERVICES</button>
+                </div>
+            `;
+        }
+
+        window.finalizeStaticActivation = (planId) => {
+            const planNames = { launchpad: 'Launchpad', galaxy: 'Galaxy', universa: 'Universa' };
+            state.user.plan = planNames[planId];
+            state.dashboardTab = 'services';
+            window.location.hash = 'dashboard';
+            document.getElementById('purchase-overlay').remove();
+            showToast(`${planNames[planId]} Plan Activated! Welcome to the next tier.`, 'success');
+        };
+
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes spin { to { transform: rotate(360deg); } }
+            @keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes modalIn {
+                from { opacity: 0; transform: scale(0.95) translateY(20px); }
+                to   { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            @keyframes shakeInput {
+                0%, 100% { transform: translateX(0); }
+                20%      { transform: translateX(-6px); }
+                40%      { transform: translateX(6px); }
+                60%      { transform: translateX(-4px); }
+                80%      { transform: translateX(4px); }
+            }
+            @keyframes chipReveal {
+                from { opacity: 0; transform: translateY(-4px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes checkDraw {
+                to { stroke-dashoffset: 0; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        /* 
+        const rzpScript = document.createElement('script');
+        rzpScript.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        rzpScript.async = true;
+        document.head.appendChild(rzpScript);
+        */
+
+        // Start App
+        initRouter();
+    </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+@font-face {
+  font-family: 'Nohemi';
+  src: url('/fonts/nohemi/Nohemi-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('/fonts/nohemi/Nohemi-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('/fonts/nohemi/Nohemi-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('/fonts/nohemi/Nohemi-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('/fonts/nohemi/Nohemi-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nohemi';
+  src: url('/fonts/nohemi/Nohemi-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Typography */
+  --font-display: 'Nohemi', sans-serif;
+  --font-body: var(--font-dm-sans);
+  --font-mono: var(--font-jetbrains-mono);
+  
+  /* Type Scale */
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-hero: clamp(3.5rem, 9vw, 7rem);
+
+  /* Colors — Canvas */
+  --bg-canvas: #080b0f;
+  --bg-subtle: #0d1117;
+  --bg-surface: #12161b;
+  --bg-elevated: #181d24;
+  
+  /* Colors — Text */
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-tertiary: #484f58;
+  --text-disabled: #30363d;
+  
+  /* Colors — Accent */
+  --accent: #00c8c8;
+  --accent-subtle: rgba(0, 200, 200, 0.1);
+  --accent-border: rgba(0, 200, 200, 0.3);
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+  
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-20: 80px;
+  --space-32: 128px;
+
+  /* Borders & UI Elements */
+  --border-subtle: 1px solid rgba(255, 255, 255, 0.05);
+  --border-bright: 1px solid rgba(255, 255, 255, 0.12);
+  --z-sticky: 100;
+  --z-modal: 1000;
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@layer base {
+  body {
+    @apply bg-[#080b0f] text-[var(--text-primary)] font-[var(--font-body)] antialiased;
+  }
+}
+
+@layer utilities {
+  .grid-bg { 
+    @apply absolute inset-0 w-full h-full pointer-events-none;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+    z-index: 0;
+  }
+
+  .hero-glow {
+    @apply absolute left-1/2 -translate-x-1/2 w-[80vw] h-[40vh] pointer-events-none opacity-10;
+    bottom: -200px;
+    background: var(--accent);
+    filter: blur(120px);
+    z-index: 0;
+  }
+
+  .api-card-redesign {
+    @apply relative bg-[var(--bg-surface)] border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-6 transition-all duration-200 overflow-hidden h-[156px] flex flex-col justify-between;
+    transition-timing-function: var(--ease-out-expo);
+  }
+
+  .api-card-redesign:hover {
+    @apply translate-y-[-2px] border-[var(--border-bright)];
+  }
+
+  .api-card-redesign::before {
+    content: '';
+    @apply absolute left-0 top-0 w-[3px] h-full bg-[var(--accent)] origin-top scale-y-0 transition-transform duration-150;
+    transition-timing-function: var(--ease-out-expo);
+  }
+
+  .api-card-redesign:hover::before {
+    @apply scale-y-100;
+  }
+  
+  .entrance {
+    @apply opacity-0 translate-y-3 transition-opacity transition-transform duration-300;
+    transition-timing-function: var(--ease-out-expo);
+  }
+  
+  .entrance.visible {
+    @apply opacity-100 translate-y-0;
+  }
+
+  .glass {
+    @apply bg-[var(--bg-canvas)]/80 backdrop-blur-2xl border-b border-white/5;
+  }
+
+  .liquid-glass {
+    background: rgba(13, 17, 23, 0.55);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    box-shadow:
+      0 4px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .liquid-glass-strong {
+    background: rgba(13, 17, 23, 0.75);
+    backdrop-filter: blur(40px) saturate(180%) brightness(0.9);
+    -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(0.9);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 8px 48px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .liquid-glass-scroll {
+    transition:
+      background 0.4s ease,
+      backdrop-filter 0.4s ease,
+      box-shadow 0.4s ease;
+  }
+
+  .liquid-glass-scroll.scrolled {
+    background: rgba(8, 11, 15, 0.88);
+    backdrop-filter: blur(48px) saturate(200%) brightness(0.85);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.05),
+      0 12px 40px rgba(0, 0, 0, 0.6);
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  @keyframes shakeInput {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+
+  @keyframes chipReveal {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes checkDraw {
+    to { stroke-dashoffset: 0; }
+  }
+}
